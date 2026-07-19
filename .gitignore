@@ -35,3 +35,8 @@ yarn-error.log*
 .vscode/*
 !.vscode/extensions.json
 .idea
+
+# agent tooling (local) — mantém .mcp.json versionado, ignora skills instalados
+.agents/
+.claude/
+skills-lock.json
