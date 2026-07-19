@@ -6,23 +6,26 @@
   color-scheme: dark;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 html,
 body {
   min-height: 100%;
 }
 
 body {
-  @apply bg-navy-950 text-navy-50 antialiased;
+  @apply bg-bg text-ink antialiased;
 }
 
-/* Scrollbar discreta no tema navy */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  @apply rounded-full bg-navy-700;
+  @apply rounded-full bg-line2;
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-navy-600;
+  @apply bg-muted2;
 }

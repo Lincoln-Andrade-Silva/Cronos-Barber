@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Card } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { LoginForm } from "./login-form";
 import { RegisterForm } from "./register-form";
@@ -12,32 +11,35 @@ export function AuthPanel({ defaultTab = "login" }: { defaultTab?: Tab }) {
   const [tab, setTab] = useState<Tab>(defaultTab);
 
   return (
-    <Card className="p-6 sm:p-8">
+    <div className="w-full">
       {/* Marca no mobile (hero fica escondido) */}
-      <div className="mb-6 flex items-center gap-3 lg:hidden">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-navy-500 text-sm font-bold text-white">
-          CB
-        </div>
-        <div className="leading-tight">
-          <p className="font-semibold">Cronos Barber</p>
-          <p className="text-xs text-navy-400">Sistema de Agendamento</p>
-        </div>
+      <div className="mb-8 flex flex-col items-center text-center lg:hidden">
+        <span className="text-[32px] font-extrabold leading-none tracking-tight text-white">
+          Cronos Barber
+        </span>
+        <span className="mt-1.5 text-[11px] font-semibold uppercase tracking-wider text-brand-light">
+          Sistema de Agendamento
+        </span>
       </div>
 
-      <h2 className="text-2xl font-semibold tracking-tight">Bem-vindo</h2>
-      <p className="mt-1 text-sm text-navy-300">Acesse sua conta ou crie uma nova.</p>
+      <h2 className="text-center text-[28px] font-extrabold tracking-tight lg:text-left">
+        Bem-vindo
+      </h2>
+      <p className="mt-1.5 text-center text-sm text-muted lg:text-left">
+        Acesse sua conta ou crie uma nova.
+      </p>
 
-      <div className="mt-6 grid grid-cols-2 gap-1 rounded-xl border border-navy-800 bg-navy-950/60 p-1">
+      <div className="mt-7 grid grid-cols-2 gap-1 rounded-xl border border-line bg-surface p-1">
         {(["login", "cadastro"] as const).map((value) => (
           <button
             key={value}
             type="button"
             onClick={() => setTab(value)}
             className={cn(
-              "rounded-lg px-3 py-2 text-sm font-medium transition",
+              "rounded-lg py-2.5 text-[13px] font-semibold transition",
               tab === value
-                ? "bg-navy-500 text-white shadow"
-                : "text-navy-300 hover:text-navy-100",
+                ? "bg-brand text-white shadow-brand"
+                : "text-muted hover:text-ink",
             )}
           >
             {value === "login" ? "Entrar" : "Cadastrar"}
@@ -45,7 +47,7 @@ export function AuthPanel({ defaultTab = "login" }: { defaultTab?: Tab }) {
         ))}
       </div>
 
-      <div className="mt-6">{tab === "login" ? <LoginForm /> : <RegisterForm />}</div>
-    </Card>
+      <div className="mt-7">{tab === "login" ? <LoginForm /> : <RegisterForm />}</div>
+    </div>
   );
 }

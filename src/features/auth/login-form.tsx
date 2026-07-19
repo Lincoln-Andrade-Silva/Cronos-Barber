@@ -2,12 +2,8 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Lock, Mail } from "lucide-react";
 import { Button, Field, FormError, Input } from "@/components/ui";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-
-const iconClass =
-  "pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-500";
 
 export function LoginForm() {
   const params = useSearchParams();
@@ -37,35 +33,27 @@ export function LoginForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <Field label="Email" htmlFor="login-email">
-        <div className="relative">
-          <Mail className={iconClass} />
-          <Input
-            id="login-email"
-            type="email"
-            required
-            autoComplete="email"
-            placeholder="seu@email.com"
-            className="pl-10"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
+        <Input
+          id="login-email"
+          type="email"
+          required
+          autoComplete="email"
+          placeholder="seu@email.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
       </Field>
 
       <Field label="Senha" htmlFor="login-senha">
-        <div className="relative">
-          <Lock className={iconClass} />
-          <Input
-            id="login-senha"
-            type="password"
-            required
-            autoComplete="current-password"
-            placeholder="••••••••"
-            className="pl-10"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-          />
-        </div>
+        <Input
+          id="login-senha"
+          type="password"
+          required
+          autoComplete="current-password"
+          placeholder="••••••••"
+          value={senha}
+          onChange={(e) => setSenha(e.target.value)}
+        />
       </Field>
 
       {erro && <FormError>{erro}</FormError>}

@@ -1,12 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Lock, Mail, Phone, User } from "lucide-react";
 import { Button, Field, FormError, Input } from "@/components/ui";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-
-const iconClass =
-  "pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-500";
 
 export function RegisterForm() {
   const [nome, setNome] = useState("");
@@ -48,65 +44,49 @@ export function RegisterForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <Field label="Nome completo" htmlFor="cad-nome">
-        <div className="relative">
-          <User className={iconClass} />
-          <Input
-            id="cad-nome"
-            required
-            placeholder="Seu nome"
-            className="pl-10"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-          />
-        </div>
+        <Input
+          id="cad-nome"
+          required
+          placeholder="Seu nome"
+          value={nome}
+          onChange={(e) => setNome(e.target.value)}
+        />
       </Field>
 
       <Field label="Email" htmlFor="cad-email">
-        <div className="relative">
-          <Mail className={iconClass} />
-          <Input
-            id="cad-email"
-            type="email"
-            required
-            autoComplete="email"
-            placeholder="seu@email.com"
-            className="pl-10"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
+        <Input
+          id="cad-email"
+          type="email"
+          required
+          autoComplete="email"
+          placeholder="seu@email.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
       </Field>
 
       <Field label="WhatsApp / Telefone" htmlFor="cad-telefone">
-        <div className="relative">
-          <Phone className={iconClass} />
-          <Input
-            id="cad-telefone"
-            type="tel"
-            autoComplete="tel"
-            placeholder="(00) 00000-0000"
-            className="pl-10"
-            value={telefone}
-            onChange={(e) => setTelefone(e.target.value)}
-          />
-        </div>
+        <Input
+          id="cad-telefone"
+          type="tel"
+          autoComplete="tel"
+          placeholder="(00) 00000-0000"
+          value={telefone}
+          onChange={(e) => setTelefone(e.target.value)}
+        />
       </Field>
 
       <Field label="Senha" htmlFor="cad-senha" hint="(mín. 6 caracteres)">
-        <div className="relative">
-          <Lock className={iconClass} />
-          <Input
-            id="cad-senha"
-            type="password"
-            required
-            minLength={6}
-            autoComplete="new-password"
-            placeholder="••••••••"
-            className="pl-10"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-          />
-        </div>
+        <Input
+          id="cad-senha"
+          type="password"
+          required
+          minLength={6}
+          autoComplete="new-password"
+          placeholder="••••••••"
+          value={senha}
+          onChange={(e) => setSenha(e.target.value)}
+        />
       </Field>
 
       {erro && <FormError>{erro}</FormError>}

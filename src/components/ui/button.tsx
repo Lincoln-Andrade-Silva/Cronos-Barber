@@ -5,15 +5,15 @@ type Variant = "primary" | "secondary" | "ghost" | "danger";
 type Size = "sm" | "md";
 
 const variantClasses: Record<Variant, string> = {
-  primary: "bg-navy-500 text-white hover:bg-navy-400",
-  secondary: "border border-navy-700 bg-navy-900 text-navy-100 hover:bg-navy-800",
-  ghost: "text-navy-300 hover:bg-navy-800/60 hover:text-navy-100",
+  primary: "bg-brand text-white shadow-brand hover:-translate-y-px hover:bg-brand-dark hover:shadow-brand-lg",
+  secondary: "border border-line bg-surface text-ink hover:bg-surface2",
+  ghost: "text-muted hover:bg-surface hover:text-ink",
   danger: "bg-red-600 text-white hover:bg-red-500",
 };
 
 const sizeClasses: Record<Size, string> = {
   sm: "px-3 py-1.5 text-xs",
-  md: "px-4 py-2.5 text-sm",
+  md: "px-4 py-3 text-sm",
 };
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -30,7 +30,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       ref={ref}
       type={type}
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition focus:outline-none focus:ring-2 focus:ring-navy-500/40 disabled:cursor-not-allowed disabled:opacity-60",
+        "inline-flex items-center justify-center gap-2 rounded-xl font-bold transition focus:outline-none focus:ring-2 focus:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0",
         variantClasses[variant],
         sizeClasses[size],
         className,
