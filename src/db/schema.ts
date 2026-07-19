@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { integer, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export const tipoUsuario = pgEnum("tipo_usuario", ["admin", "cliente"]);
 export const statusUsuario = pgEnum("status_usuario", ["ativo", "inativo"]);
@@ -18,3 +18,18 @@ export const profiles = pgTable("profiles", {
 
 export type Profile = typeof profiles.$inferSelect;
 export type NovoProfile = typeof profiles.$inferInsert;
+
+// Identidade da barbearia (linha única, id sempre = 1). Editável em Configurações.
+export const barbeariaInfo = pgTable("barbearia_info", {
+  id: integer("id").primaryKey().default(1),
+  nome: text("nome"),
+  logoUrl: text("logo_url"),
+  horarioAtendimento: text("horario_atendimento"),
+  endereco: text("endereco"),
+  whatsapp: text("whatsapp"),
+  instagramLink: text("instagram_link"),
+  facebookLink: text("facebook_link"),
+  atualizadoEm: timestamp("atualizado_em", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type BarbeariaInfo = typeof barbeariaInfo.$inferSelect;

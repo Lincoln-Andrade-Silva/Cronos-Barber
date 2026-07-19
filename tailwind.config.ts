@@ -26,8 +26,8 @@ const config: Config = {
         },
       },
       boxShadow: {
-        brand: "0 4px 20px rgba(59, 130, 246, 0.35)",
-        "brand-lg": "0 6px 24px rgba(59, 130, 246, 0.45)",
+        brand: "0 1px 6px rgba(59, 130, 246, 0.06)",
+        "brand-lg": "0 2px 10px rgba(59, 130, 246, 0.1)",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],

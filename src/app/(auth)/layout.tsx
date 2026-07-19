@@ -1,10 +1,16 @@
+import { getBarbeariaNome } from "@/lib/barbearia";
+
+export const dynamic = "force-dynamic";
+
 const FEATURES = [
-  "Agendamento online sem conflitos de horário",
-  "Painel exclusivo para cada tipo de usuário",
-  "Histórico completo de atendimentos",
+  "Agendamento online sem conflito de horário",
+  "Painel com dashboard, financeiro e relatórios",
+  "Planos de assinatura e histórico de atendimentos",
 ];
 
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
+export default async function AuthLayout({ children }: { children: React.ReactNode }) {
+  const nomeBarbearia = await getBarbeariaNome();
+
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       {/* Hero: visivel apenas em telas grandes */}
@@ -14,7 +20,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         <div className="relative">
           <span className="text-[26px] font-extrabold tracking-tight text-white">
-            Cronos Barber
+            {nomeBarbearia}
           </span>
         </div>
 

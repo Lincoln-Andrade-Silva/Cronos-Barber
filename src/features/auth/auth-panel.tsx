@@ -7,7 +7,13 @@ import { RegisterForm } from "./register-form";
 
 type Tab = "login" | "cadastro";
 
-export function AuthPanel({ defaultTab = "login" }: { defaultTab?: Tab }) {
+export function AuthPanel({
+  defaultTab = "login",
+  nomeBarbearia,
+}: {
+  defaultTab?: Tab;
+  nomeBarbearia: string;
+}) {
   const [tab, setTab] = useState<Tab>(defaultTab);
 
   return (
@@ -15,7 +21,7 @@ export function AuthPanel({ defaultTab = "login" }: { defaultTab?: Tab }) {
       {/* Marca no mobile (hero fica escondido) */}
       <div className="mb-8 flex flex-col items-center text-center lg:hidden">
         <span className="text-[32px] font-extrabold leading-none tracking-tight text-white">
-          Cronos Barber
+          {nomeBarbearia}
         </span>
         <span className="mt-1.5 text-[11px] font-semibold uppercase tracking-wider text-brand-light">
           Sistema de Agendamento

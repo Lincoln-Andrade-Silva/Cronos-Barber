@@ -8,16 +8,11 @@ import { ADMIN_NAV } from "@/lib/admin-nav";
 import { LogoutButton } from "@/features/auth/logout-button";
 import { cn } from "@/lib/cn";
 
-function Brand() {
+function Brand({ nomeBarbearia }: { nomeBarbearia: string }) {
   return (
-    <div className="flex items-center gap-3 border-b border-line px-5 py-4">
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
-        CB
-      </div>
-      <div className="leading-tight">
-        <p className="text-sm font-semibold">Cronos Barber</p>
-        <p className="text-xs text-muted">Painel Admin</p>
-      </div>
+    <div className="border-b border-line px-5 pb-[18px] pt-6">
+      <p className="text-xl font-extrabold tracking-tight text-white">{nomeBarbearia}</p>
+      <p className="mt-1 text-xs text-muted">Painel Admin</p>
     </div>
   );
 }
@@ -27,6 +22,9 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+      <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-muted2">
+        Menu
+      </p>
       {ADMIN_NAV.map((item) => {
         const Icon = item.icon;
         const active =
@@ -37,9 +35,9 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
             <div
               key={item.label}
               title="Em breve"
-              className="flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted2"
+              className="flex cursor-not-allowed items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-[13px] text-muted2"
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-4 w-4" strokeWidth={1.8} />
               <span>{item.label}</span>
               <span className="ml-auto text-[10px] font-medium uppercase tracking-wider text-muted2">
                 em breve
@@ -54,13 +52,13 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition",
+              "flex items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-[13px] transition",
               active
-                ? "bg-brand text-white shadow-brand"
-                : "text-muted hover:bg-surface hover:text-ink",
+                ? "bg-brand/[0.12] font-semibold text-brand-light"
+                : "font-medium text-muted hover:bg-surface hover:text-ink",
             )}
           >
-            <Icon className="h-4 w-4" />
+            <Icon className="h-4 w-4" strokeWidth={1.8} />
             <span>{item.label}</span>
           </Link>
         );
@@ -71,14 +69,14 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 
 function UserFooter({ nome }: { nome: string }) {
   return (
-    <div className="border-t border-line p-4">
+    <div className="mt-auto border-t border-line p-4">
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-line2 text-sm font-semibold text-ink">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
           {nome.charAt(0).toUpperCase()}
         </div>
         <div className="min-w-0 flex-1 leading-tight">
           <p className="truncate text-sm font-medium">{nome}</p>
-          <p className="text-xs text-muted">Administrador</p>
+          <p className="text-xs font-medium text-brand-light">Administrador</p>
         </div>
       </div>
       <div className="mt-3">
@@ -88,14 +86,22 @@ function UserFooter({ nome }: { nome: string }) {
   );
 }
 
-export function AdminShell({ nome, children }: { nome: string; children: React.ReactNode }) {
+export function AdminShell({
+  nome,
+  nomeBarbearia,
+  children,
+}: {
+  nome: string;
+  nomeBarbearia: string;
+  children: React.ReactNode;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
     <div className="min-h-screen lg:pl-64">
       {/* Sidebar fixa (desktop) */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-line bg-panel lg:flex">
-        <Brand />
+        <Brand nomeBarbearia={nomeBarbearia} />
         <NavList />
         <UserFooter nome={nome} />
       </aside>
@@ -106,16 +112,11 @@ export function AdminShell({ nome, children }: { nome: string; children: React.R
           type="button"
           onClick={() => setOpen(true)}
           aria-label="Abrir menu"
-          className="rounded-lg p-2 text-muted transition hover:bg-surface hover:text-ink"
+          className="rounded-lg p-2 text-white transition hover:bg-surface"
         >
           <Menu className="h-5 w-5" />
         </button>
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-brand text-xs font-bold text-white">
-            CB
-          </div>
-          <span className="text-sm font-semibold">Cronos Barber</span>
-        </div>
+        <span className="text-sm font-semibold text-white">{nomeBarbearia}</span>
       </header>
 
       {/* Drawer (mobile) */}
@@ -128,7 +129,7 @@ export function AdminShell({ nome, children }: { nome: string; children: React.R
           />
           <aside className="absolute inset-y-0 left-0 flex w-72 max-w-[85%] flex-col bg-panel shadow-2xl">
             <div className="flex items-center justify-between border-b border-line pr-2">
-              <Brand />
+              <Brand nomeBarbearia={nomeBarbearia} />
               <button
                 type="button"
                 onClick={() => setOpen(false)}

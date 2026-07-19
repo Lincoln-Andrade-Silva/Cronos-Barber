@@ -7,7 +7,7 @@ Construído como **template reutilizável**: modelo **1 barbearia por deploy** (
 ## Stack
 
 - **Next.js 14** (App Router) + **TypeScript** (strict): frontend + API (Route Handlers)
-- **TailwindCSS**: tema azul escuro (navy), mobile-first
+- **TailwindCSS**: tema escuro (fundo quase preto + acento azul), mobile-first
 - **Drizzle ORM** + **Supabase** (Postgres, Auth, Storage)
 - **lucide-react**: ícones
 - **Deploy**: Vercel + Supabase (free tier)
@@ -64,7 +64,9 @@ Componentes reutilizáveis em `src/components/ui` (fonte única de estilo):
 - `Input`, `Field`, `Label`, `FormError`, `FormSuccess`
 - `Card`, `PageHeader`
 
-O menu lateral do admin fica em `src/components/admin/admin-shell.tsx` (responsivo, drawer no mobile). Tema definido em `tailwind.config.ts` (escala `navy`).
+O menu lateral do admin fica em `src/components/admin/admin-shell.tsx` (responsivo, drawer no mobile). Tokens de cor semânticos (`bg`, `panel`, `surface`, `line`, `ink`, `muted`, `brand`) em `tailwind.config.ts`.
+
+A marca exibida (login, sidebar, home) vem de `getBarbeariaNome()` (`src/lib/barbearia.ts`), lida da tabela `barbearia_info`, com fallback `Cronos Barber`. Editável em Configurações > Barbearia (Fase 2).
 
 ## Roadmap (fases)
 

@@ -15,6 +15,20 @@
       "when": 1784484575716,
       "tag": "0001_auth_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784487007035,
+      "tag": "0002_legal_wind_dancer",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1784487043227,
+      "tag": "0003_barbearia_rls_seed",
+      "breakpoints": true
     }
   ]
 }

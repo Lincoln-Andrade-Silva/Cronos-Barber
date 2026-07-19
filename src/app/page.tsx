@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Card } from "@/components/ui";
 import { getCurrentProfile } from "@/lib/auth";
+import { getBarbeariaNome } from "@/lib/barbearia";
 import { LogoutButton } from "@/features/auth/logout-button";
 
 export const dynamic = "force-dynamic";
@@ -9,16 +10,15 @@ export default async function ClientHome() {
   const profile = await getCurrentProfile();
   if (profile.tipo === "admin") redirect("/admin");
 
+  const nomeBarbearia = await getBarbeariaNome();
+
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col px-4 py-8">
-      <header className="mb-8 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-sm font-bold text-white">
-            CB
-          </div>
-          <span className="font-semibold">Cronos Barber</span>
-        </div>
-        <LogoutButton />
+      <header className="mb-8 flex items-center justify-between gap-4">
+        <span className="text-lg font-extrabold tracking-tight text-white">
+          {nomeBarbearia}
+        </span>
+        <LogoutButton fullWidth={false} />
       </header>
 
       <Card>
