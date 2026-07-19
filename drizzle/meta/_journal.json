@@ -29,6 +29,20 @@
       "when": 1784487043227,
       "tag": "0003_barbearia_rls_seed",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784488451065,
+      "tag": "0004_fast_overlord",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1784488468980,
+      "tag": "0005_abandoned_spitfire",
+      "breakpoints": true
     }
   ]
 }

@@ -10,9 +10,11 @@ type Tab = "login" | "cadastro";
 export function AuthPanel({
   defaultTab = "login",
   nomeBarbearia,
+  logoUrl,
 }: {
   defaultTab?: Tab;
   nomeBarbearia: string;
+  logoUrl: string | null;
 }) {
   const [tab, setTab] = useState<Tab>(defaultTab);
 
@@ -20,6 +22,14 @@ export function AuthPanel({
     <div className="w-full">
       {/* Marca no mobile (hero fica escondido) */}
       <div className="mb-8 flex flex-col items-center text-center lg:hidden">
+        {logoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={logoUrl}
+            alt={nomeBarbearia}
+            className="mb-3 h-16 w-16 rounded-full border border-line object-cover"
+          />
+        )}
         <span className="text-[32px] font-extrabold leading-none tracking-tight text-white">
           {nomeBarbearia}
         </span>

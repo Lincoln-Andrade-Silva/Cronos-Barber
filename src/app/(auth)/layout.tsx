@@ -1,4 +1,4 @@
-import { getBarbeariaNome } from "@/lib/barbearia";
+import { getBarbeariaBrand } from "@/lib/barbearia";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +9,7 @@ const FEATURES = [
 ];
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
-  const nomeBarbearia = await getBarbeariaNome();
+  const { nome: nomeBarbearia, logoUrl } = await getBarbeariaBrand();
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
@@ -18,7 +18,15 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
         <div className="pointer-events-none absolute -right-[150px] -top-[150px] h-[500px] w-[500px] bg-[radial-gradient(circle,rgba(59,130,246,0.08)_0%,transparent_70%)]" />
         <div className="pointer-events-none absolute -bottom-[100px] -left-[100px] h-[400px] w-[400px] bg-[radial-gradient(circle,rgba(59,130,246,0.05)_0%,transparent_70%)]" />
 
-        <div className="relative">
+        <div className="relative flex items-center gap-3">
+          {logoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logoUrl}
+              alt={nomeBarbearia}
+              className="h-11 w-11 rounded-full border border-line object-cover"
+            />
+          )}
           <span className="text-[26px] font-extrabold tracking-tight text-white">
             {nomeBarbearia}
           </span>

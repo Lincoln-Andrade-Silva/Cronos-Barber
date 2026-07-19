@@ -26,5 +26,5 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "Relatórios", href: "/admin/relatorios", icon: BarChart3 },
   { label: "Gestão", href: "/admin/gestao", icon: Boxes },
   { label: "Assinaturas", href: "/admin/assinaturas", icon: CreditCard },
-  { label: "Configurações", href: "/admin/configuracoes", icon: Settings },
+  { label: "Configurações", href: "/admin/configuracoes", icon: Settings, ready: true },
 ];

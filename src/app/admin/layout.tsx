@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
-import { getBarbeariaNome } from "@/lib/barbearia";
+import { getBarbeariaBrand } from "@/lib/barbearia";
 import { AdminShell } from "@/components/admin/admin-shell";
 
 export const dynamic = "force-dynamic";
@@ -9,10 +9,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const profile = await getCurrentProfile();
   if (profile.tipo !== "admin") redirect("/");
 
-  const nomeBarbearia = await getBarbeariaNome();
+  const { nome: nomeBarbearia, logoUrl } = await getBarbeariaBrand();
 
   return (
-    <AdminShell nome={profile.nome} nomeBarbearia={nomeBarbearia}>
+    <AdminShell nome={profile.nome} nomeBarbearia={nomeBarbearia} logoUrl={logoUrl}>
       {children}
     </AdminShell>
   );

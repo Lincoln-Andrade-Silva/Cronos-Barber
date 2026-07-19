@@ -1,4 +1,4 @@
-import { integer, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { integer, jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export const tipoUsuario = pgEnum("tipo_usuario", ["admin", "cliente"]);
 export const statusUsuario = pgEnum("status_usuario", ["ativo", "inativo"]);
@@ -19,16 +19,27 @@ export const profiles = pgTable("profiles", {
 export type Profile = typeof profiles.$inferSelect;
 export type NovoProfile = typeof profiles.$inferInsert;
 
+// Horário de atendimento por dia da semana (0 = domingo ... 6 = sábado).
+export interface HorarioDia {
+  dia: number;
+  aberto: boolean;
+  abre: string;
+  fecha: string;
+}
+
 // Identidade da barbearia (linha única, id sempre = 1). Editável em Configurações.
 export const barbeariaInfo = pgTable("barbearia_info", {
   id: integer("id").primaryKey().default(1),
   nome: text("nome"),
   logoUrl: text("logo_url"),
-  horarioAtendimento: text("horario_atendimento"),
-  endereco: text("endereco"),
   whatsapp: text("whatsapp"),
   instagramLink: text("instagram_link"),
   facebookLink: text("facebook_link"),
+  enderecoRua: text("endereco_rua"),
+  enderecoNumero: text("endereco_numero"),
+  enderecoBairro: text("endereco_bairro"),
+  enderecoCidade: text("endereco_cidade"),
+  horario: jsonb("horario").$type<HorarioDia[]>(),
   atualizadoEm: timestamp("atualizado_em", { withTimezone: true }).notNull().defaultNow(),
 });
 
