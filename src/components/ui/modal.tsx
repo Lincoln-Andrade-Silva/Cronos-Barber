@@ -39,7 +39,7 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
         role="dialog"
         aria-modal="true"
         className={cn(
-          "relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-line bg-panel shadow-2xl",
+          "relative max-h-[90vh] w-full max-w-lg overflow-y-auto overflow-x-hidden rounded-2xl border border-line bg-panel shadow-2xl",
           className,
         )}
       >

@@ -98,23 +98,21 @@ export default async function AgendaPage({
 
   return (
     <div>
-      <PageHeader
-        title="Agenda"
-        description="Agendamentos do dia por profissional."
-        action={
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <DayNav data={data} />
-            {listaBarbeiros.length > 0 && (
-              <BarberSelect barbeiros={listaBarbeiros} atual={barbeiroSel} />
-            )}
-            <NovoAtendimento
-              barbeiros={listaBarbeiros}
-              clientes={listaClientes}
-              servicos={listaServicos}
-            />
-          </div>
-        }
-      />
+      <PageHeader title="Agenda" description="Agendamentos do dia por profissional." />
+
+      <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+        <DayNav data={data} />
+        {listaBarbeiros.length > 0 && (
+          <BarberSelect barbeiros={listaBarbeiros} atual={barbeiroSel} />
+        )}
+        <div className="sm:ml-auto">
+          <NovoAtendimento
+            barbeiros={listaBarbeiros}
+            clientes={listaClientes}
+            servicos={listaServicos}
+          />
+        </div>
+      </div>
 
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {cards.map(({ label, valor, icon: Icon }) => (

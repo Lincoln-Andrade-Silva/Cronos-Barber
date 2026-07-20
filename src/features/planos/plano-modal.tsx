@@ -108,7 +108,7 @@ export function PlanoModal({
           />
         </Field>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Valor mensal (R$)" htmlFor="pl-valor">
             <Input
               id="pl-valor"
