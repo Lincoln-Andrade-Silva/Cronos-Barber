@@ -75,7 +75,7 @@ function posicionar(items: AgendaItem[]): Posicionado[] {
   return eventos;
 }
 
-const PX_HORA = 80;
+const PX_HORA = 104;
 
 function minutosDoDia(iso: string): number {
   const t = new Date(iso).toLocaleTimeString("pt-BR", {
@@ -173,7 +173,7 @@ export function AgendaLista({ items }: { items: AgendaItem[] }) {
           <div className="absolute inset-y-0 left-14 right-2">
             {posicionados.map(({ item, inicio, fim, col, colunas }) => {
               const top = ((inicio - inicioGrade) / 60) * PX_HORA;
-              const altura = Math.max(((fim - inicio) / 60) * PX_HORA, 36);
+              const altura = Math.max(((fim - inicio) / 60) * PX_HORA, 48);
               return (
                 <div
                   key={item.id}
@@ -189,15 +189,18 @@ export function AgendaLista({ items }: { items: AgendaItem[] }) {
                   }}
                 >
                   <div className="flex items-start justify-between gap-1">
-                    <div className="min-w-0">
-                      <p className="flex items-center gap-1 truncate text-xs font-semibold">
+                    <div className="min-w-0 space-y-0.5">
+                      <p className="truncate text-[10px] text-muted2">
+                        {hhmm(inicio)} - {hhmm(fim)} · {fim - inicio}min
+                      </p>
+                      <p className="flex items-center gap-1 text-xs font-semibold">
+                        <span className="truncate">{item.clienteNome}</span>
                         {item.tipo === "plano" && (
                           <Star className="h-3 w-3 shrink-0 fill-brand-light text-brand-light" />
                         )}
-                        <span className="truncate">{item.clienteNome}</span>
                       </p>
                       <p className="truncate text-[11px] text-muted">
-                        {hhmm(inicio)}-{hhmm(fim)} · {item.servicoNome}
+                        {item.servicoNome} - {formatBRL(item.valor)}
                       </p>
                     </div>
                     <div className="flex shrink-0 gap-1">
