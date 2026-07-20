@@ -3,14 +3,19 @@
 import { useState, useTransition } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Pencil, Plus, Trash2 } from "lucide-react";
-import { Badge, Button, ConfirmModal, DataTable, FormError, Select } from "@/components/ui";
+import {
+  Badge,
+  Button,
+  ConfirmModal,
+  DataTableServer,
+  FormError,
+  UrlSelect,
+} from "@/components/ui";
 import type { Servico } from "@/db/schema";
 import { cn } from "@/lib/cn";
 import { formatBRL } from "@/lib/format";
 import { excluirPlano } from "./actions";
 import { PlanoModal, type PlanoComServicos } from "./plano-modal";
-
-type StatusFiltro = "todos" | "ativos" | "inativos";
 
 const iconBtn =
   "inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted transition hover:bg-surface hover:text-ink";
@@ -18,19 +23,18 @@ const iconBtn =
 export function PlanosClient({
   planos,
   servicos,
+  page,
+  pageCount,
 }: {
   planos: PlanoComServicos[];
   servicos: Servico[];
+  page: number;
+  pageCount: number;
 }) {
-  const [status, setStatus] = useState<StatusFiltro>("todos");
   const [modal, setModal] = useState<{ plano: PlanoComServicos | null } | null>(null);
   const [excluir, setExcluir] = useState<PlanoComServicos | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-
-  const dados = planos.filter((p) =>
-    status === "todos" ? true : status === "ativos" ? p.ativo : !p.ativo,
-  );
 
   function confirmarExcluir() {
     if (!excluir) return;
@@ -38,9 +42,7 @@ export function PlanosClient({
     setErro(null);
     startTransition(async () => {
       const res = await excluirPlano(id);
-      if (res.error) {
-        setErro(res.error);
-      }
+      if (res.error) setErro(res.error);
       setExcluir(null);
     });
   }
@@ -64,9 +66,7 @@ export function PlanosClient({
     {
       id: "servicos",
       header: "Serviços",
-      cell: ({ row }) => (
-        <span className="text-muted">{row.original.servicoIds.length}</span>
-      ),
+      cell: ({ row }) => <span className="text-muted">{row.original.servicos.length}</span>,
     },
     {
       accessorKey: "ativo",
@@ -85,12 +85,7 @@ export function PlanosClient({
         const p = row.original;
         return (
           <div className="flex justify-end gap-1">
-            <button
-              type="button"
-              title="Editar"
-              onClick={() => setModal({ plano: p })}
-              className={iconBtn}
-            >
+            <button type="button" title="Editar" onClick={() => setModal({ plano: p })} className={iconBtn}>
               <Pencil className="h-4 w-4" />
             </button>
             <button
@@ -108,9 +103,8 @@ export function PlanosClient({
   ];
 
   const filtro = (
-    <Select
-      value={status}
-      onChange={(v) => setStatus(v as StatusFiltro)}
+    <UrlSelect
+      param="status"
       className="w-36 sm:w-44"
       options={[
         { value: "todos", label: "Todos" },
@@ -131,9 +125,11 @@ export function PlanosClient({
     <div className="space-y-4">
       {erro && <FormError>{erro}</FormError>}
 
-      <DataTable
+      <DataTableServer
         columns={columns}
-        data={dados}
+        data={planos}
+        page={page}
+        pageCount={pageCount}
         searchPlaceholder="Buscar por nome..."
         filter={filtro}
         actions={acoes}

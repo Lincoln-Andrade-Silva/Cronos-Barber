@@ -44,7 +44,7 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
         )}
       >
         {title && (
-          <div className="sticky top-0 flex items-center justify-between border-b border-line bg-panel px-5 py-4">
+          <div className="sticky top-0 z-30 flex items-center justify-between border-b border-line bg-panel px-5 py-4">
             <h2 className="text-base font-semibold">{title}</h2>
             <button
               type="button"

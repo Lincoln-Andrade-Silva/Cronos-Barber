@@ -41,14 +41,24 @@ export async function salvarPlano(
 
   const { nome, valor, diasValidade, ativo } = parsed.data;
   const id = formData.get("id");
-  const servicoIds = formData
+  const vinculos = formData
     .getAll("servicoIds")
     .map(String)
-    .filter((sid) => z.string().uuid().safeParse(sid).success);
+    .filter((sid) => z.string().uuid().safeParse(sid).success)
+    .map((servicoId) => {
+      const raw = formData.get(`limite_${servicoId}`);
+      const n = raw === null || raw === "" ? null : Number(raw);
+      const limite = n !== null && Number.isInteger(n) && n > 0 ? n : null;
+      return { servicoId, limite };
+    });
+  const diasValidos = formData
+    .getAll("diasValidos")
+    .map(Number)
+    .filter((d) => Number.isInteger(d) && d >= 0 && d <= 6);
 
   try {
     let planoId: string;
-    const valores = { nome, valor: valor.toFixed(2), diasValidade, ativo };
+    const valores = { nome, valor: valor.toFixed(2), diasValidade, diasValidos, ativo };
     if (typeof id === "string" && id) {
       await db.update(planos).set(valores).where(eq(planos.id, id));
       await db.delete(planoServicos).where(eq(planoServicos.planoId, id));
@@ -58,8 +68,10 @@ export async function salvarPlano(
       planoId = novo.id;
     }
 
-    if (servicoIds.length > 0) {
-      await db.insert(planoServicos).values(servicoIds.map((servicoId) => ({ planoId, servicoId })));
+    if (vinculos.length > 0) {
+      await db
+        .insert(planoServicos)
+        .values(vinculos.map((v) => ({ planoId, servicoId: v.servicoId, limite: v.limite })));
     }
   } catch (err) {
     console.error("Falha ao salvar plano:", err);

@@ -29,7 +29,7 @@ export const ADMIN_NAV: AdminNavSection[] = [
       { label: "Dashboard", href: "/admin", icon: Gauge, ready: true },
       { label: "Agenda", href: "/admin/agenda", icon: CalendarDays, ready: true },
       { label: "Cadastros", href: "/admin/cadastros", icon: Boxes, ready: true },
-      { label: "Vendas", href: "/admin/vendas", icon: ShoppingCart },
+      { label: "Vendas", href: "/admin/vendas", icon: ShoppingCart, ready: true },
       { label: "Assinaturas", href: "/admin/assinaturas", icon: CreditCard, ready: true },
       { label: "Relatórios", href: "/admin/relatorios", icon: BarChart3 },
     ],

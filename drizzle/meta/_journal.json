@@ -113,6 +113,34 @@
       "when": 1784550123534,
       "tag": "0015_shallow_tony_stark",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1784550852315,
+      "tag": "0016_smart_kabuki",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1784550887547,
+      "tag": "0017_vendas_produtos_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1784551843458,
+      "tag": "0018_heavy_lady_deathstrike",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1784552863615,
+      "tag": "0019_spicy_mach_iv",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,1 @@
+ALTER TABLE "plano_servicos" ADD COLUMN "limite" integer;

@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Pencil, Plus, Trash2 } from "lucide-react";
-import { Badge, Button, ConfirmModal, DataTable, Select } from "@/components/ui";
+import { Badge, Button, ConfirmModal, DataTableServer, UrlSelect } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { excluirAssinatura } from "./actions";
 import {
@@ -23,8 +23,6 @@ export interface AssinanteRow {
   status: "ativo" | "inativo";
 }
 
-type StatusFiltro = "todos" | "ativos" | "inativos";
-
 const iconBtn =
   "inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted transition hover:bg-surface hover:text-ink";
 
@@ -41,19 +39,18 @@ export function AssinantesClient({
   assinaturas,
   clientes,
   planos,
+  page,
+  pageCount,
 }: {
   assinaturas: AssinanteRow[];
   clientes: OpcaoCliente[];
   planos: OpcaoPlano[];
+  page: number;
+  pageCount: number;
 }) {
-  const [status, setStatus] = useState<StatusFiltro>("todos");
   const [modal, setModal] = useState<{ assinatura: AssinanteRow | null } | null>(null);
   const [excluir, setExcluir] = useState<AssinanteRow | null>(null);
   const [pending, startTransition] = useTransition();
-
-  const dados = assinaturas.filter((a) =>
-    status === "todos" ? true : status === "ativos" ? a.status === "ativo" : a.status === "inativo",
-  );
 
   function confirmarExcluir() {
     if (!excluir) return;
@@ -104,12 +101,7 @@ export function AssinantesClient({
         const a = row.original;
         return (
           <div className="flex justify-end gap-1">
-            <button
-              type="button"
-              title="Editar"
-              onClick={() => setModal({ assinatura: a })}
-              className={iconBtn}
-            >
+            <button type="button" title="Editar" onClick={() => setModal({ assinatura: a })} className={iconBtn}>
               <Pencil className="h-4 w-4" />
             </button>
             <button
@@ -127,9 +119,8 @@ export function AssinantesClient({
   ];
 
   const filtro = (
-    <Select
-      value={status}
-      onChange={(v) => setStatus(v as StatusFiltro)}
+    <UrlSelect
+      param="status"
       className="w-36 sm:w-44"
       options={[
         { value: "todos", label: "Todas" },
@@ -148,9 +139,11 @@ export function AssinantesClient({
 
   return (
     <>
-      <DataTable
+      <DataTableServer
         columns={columns}
-        data={dados}
+        data={assinaturas}
+        page={page}
+        pageCount={pageCount}
         searchPlaceholder="Buscar por cliente..."
         filter={filtro}
         actions={acoes}

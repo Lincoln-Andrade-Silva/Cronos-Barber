@@ -12,4 +12,7 @@ export { Toggle } from "./toggle";
 export { Modal } from "./modal";
 export { ConfirmModal } from "./confirm-modal";
 export { DataTable } from "./data-table";
+export { DataTableServer } from "./data-table-server";
+export { UrlSelect } from "./url-select";
 export { TabBar, type TabItem } from "./tab-bar";
+export { UrlTabBar } from "./url-tab-bar";

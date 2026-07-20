@@ -3,26 +3,27 @@
 import { useState, useTransition } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Pencil, Plus, Power, PowerOff, Trash2 } from "lucide-react";
-import { Badge, Button, ConfirmModal, DataTable, Select } from "@/components/ui";
+import { Badge, Button, ConfirmModal, DataTableServer, UrlSelect } from "@/components/ui";
 import type { Barbeiro } from "@/db/schema";
 import { cn } from "@/lib/cn";
 import { alternarAtivoBarbeiro, excluirBarbeiro } from "./actions";
 import { BarbeiroModal } from "./barbeiro-modal";
 
-type StatusFiltro = "todos" | "ativos" | "inativos";
-
 const iconBtn =
   "inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted transition hover:bg-surface hover:text-ink";
 
-export function BarbeirosClient({ barbeiros }: { barbeiros: Barbeiro[] }) {
-  const [status, setStatus] = useState<StatusFiltro>("todos");
+export function BarbeirosClient({
+  barbeiros,
+  page,
+  pageCount,
+}: {
+  barbeiros: Barbeiro[];
+  page: number;
+  pageCount: number;
+}) {
   const [modal, setModal] = useState<{ barbeiro: Barbeiro | null } | null>(null);
   const [excluir, setExcluir] = useState<Barbeiro | null>(null);
   const [pending, startTransition] = useTransition();
-
-  const dados = barbeiros.filter((b) =>
-    status === "todos" ? true : status === "ativos" ? b.ativo : !b.ativo,
-  );
 
   function toggleAtivo(b: Barbeiro) {
     startTransition(() => {
@@ -82,12 +83,7 @@ export function BarbeirosClient({ barbeiros }: { barbeiros: Barbeiro[] }) {
         const b = row.original;
         return (
           <div className="flex justify-end gap-1">
-            <button
-              type="button"
-              title="Editar"
-              onClick={() => setModal({ barbeiro: b })}
-              className={iconBtn}
-            >
+            <button type="button" title="Editar" onClick={() => setModal({ barbeiro: b })} className={iconBtn}>
               <Pencil className="h-4 w-4" />
             </button>
             <button
@@ -113,9 +109,8 @@ export function BarbeirosClient({ barbeiros }: { barbeiros: Barbeiro[] }) {
   ];
 
   const filtro = (
-    <Select
-      value={status}
-      onChange={(v) => setStatus(v as StatusFiltro)}
+    <UrlSelect
+      param="status"
       className="w-36 sm:w-44"
       options={[
         { value: "todos", label: "Todos" },
@@ -134,9 +129,11 @@ export function BarbeirosClient({ barbeiros }: { barbeiros: Barbeiro[] }) {
 
   return (
     <>
-      <DataTable
+      <DataTableServer
         columns={columns}
-        data={dados}
+        data={barbeiros}
+        page={page}
+        pageCount={pageCount}
         searchPlaceholder="Buscar por nome..."
         filter={filtro}
         actions={acoes}

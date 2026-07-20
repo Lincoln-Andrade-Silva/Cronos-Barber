@@ -132,6 +132,9 @@ export const planos = pgTable("planos", {
   nome: text("nome").notNull(),
   valor: numeric("valor", { precision: 10, scale: 2 }).notNull().default("0"),
   diasValidade: integer("dias_validade").notNull().default(30),
+  // Dias da semana (0=domingo ... 6=sábado) em que o plano cobre os serviços.
+  // Fora desses dias, o atendimento é cobrado avulso.
+  diasValidos: jsonb("dias_validos").$type<number[]>().notNull().default([0, 1, 2, 3, 4, 5, 6]),
   ativo: boolean("ativo").notNull().default(true),
   criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -139,14 +142,18 @@ export const planos = pgTable("planos", {
 export type Plano = typeof planos.$inferSelect;
 
 // N:N entre planos e serviços inclusos (cobertos pela assinatura).
+// `limite` = usos por período do plano; null = ilimitado. Estourou o limite = avulso.
 export const planoServicos = pgTable(
   "plano_servicos",
   {
     planoId: uuid("plano_id").notNull(),
     servicoId: uuid("servico_id").notNull(),
+    limite: integer("limite"),
   },
   (t) => ({ pk: primaryKey({ columns: [t.planoId, t.servicoId] }) }),
 );
+
+export type PlanoServico = typeof planoServicos.$inferSelect;
 
 export const statusAssinatura = pgEnum("status_assinatura", ["ativo", "inativo"]);
 
@@ -160,3 +167,16 @@ export const assinaturas = pgTable("assinaturas", {
 });
 
 export type Assinatura = typeof assinaturas.$inferSelect;
+
+export const vendasProdutos = pgTable("vendas_produtos", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  produtoId: uuid("produto_id").notNull(),
+  quantidade: integer("quantidade").notNull().default(1),
+  valorUnitario: numeric("valor_unitario", { precision: 10, scale: 2 }).notNull(),
+  total: numeric("total", { precision: 10, scale: 2 }).notNull(),
+  barbeiroId: uuid("barbeiro_id").notNull(),
+  clienteId: uuid("cliente_id"),
+  dataHora: timestamp("data_hora", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type VendaProduto = typeof vendasProdutos.$inferSelect;

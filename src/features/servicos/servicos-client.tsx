@@ -3,27 +3,28 @@
 import { useState, useTransition } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Pencil, Plus, Trash2 } from "lucide-react";
-import { Badge, Button, ConfirmModal, DataTable, Select } from "@/components/ui";
+import { Badge, Button, ConfirmModal, DataTableServer, UrlSelect } from "@/components/ui";
 import type { Servico } from "@/db/schema";
 import { cn } from "@/lib/cn";
 import { formatBRL, formatDuracao } from "@/lib/format";
 import { excluirServico } from "./actions";
 import { ServicoModal } from "./servico-modal";
 
-type StatusFiltro = "todos" | "ativos" | "inativos";
-
 const iconBtn =
   "inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted transition hover:bg-surface hover:text-ink";
 
-export function ServicosClient({ servicos }: { servicos: Servico[] }) {
-  const [status, setStatus] = useState<StatusFiltro>("todos");
+export function ServicosClient({
+  servicos,
+  page,
+  pageCount,
+}: {
+  servicos: Servico[];
+  page: number;
+  pageCount: number;
+}) {
   const [modal, setModal] = useState<{ servico: Servico | null } | null>(null);
   const [excluir, setExcluir] = useState<Servico | null>(null);
   const [pending, startTransition] = useTransition();
-
-  const dados = servicos.filter((s) =>
-    status === "todos" ? true : status === "ativos" ? s.ativo : !s.ativo,
-  );
 
   function confirmarExcluir() {
     if (!excluir) return;
@@ -69,12 +70,7 @@ export function ServicosClient({ servicos }: { servicos: Servico[] }) {
         const s = row.original;
         return (
           <div className="flex justify-end gap-1">
-            <button
-              type="button"
-              title="Editar"
-              onClick={() => setModal({ servico: s })}
-              className={iconBtn}
-            >
+            <button type="button" title="Editar" onClick={() => setModal({ servico: s })} className={iconBtn}>
               <Pencil className="h-4 w-4" />
             </button>
             <button
@@ -92,9 +88,8 @@ export function ServicosClient({ servicos }: { servicos: Servico[] }) {
   ];
 
   const filtro = (
-    <Select
-      value={status}
-      onChange={(v) => setStatus(v as StatusFiltro)}
+    <UrlSelect
+      param="status"
       className="w-36 sm:w-44"
       options={[
         { value: "todos", label: "Todos" },
@@ -113,9 +108,11 @@ export function ServicosClient({ servicos }: { servicos: Servico[] }) {
 
   return (
     <>
-      <DataTable
+      <DataTableServer
         columns={columns}
-        data={dados}
+        data={servicos}
+        page={page}
+        pageCount={pageCount}
         searchPlaceholder="Buscar por nome..."
         filter={filtro}
         actions={acoes}

@@ -3,31 +3,28 @@
 import { useState, useTransition } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Pencil, Plus, Power, PowerOff, Trash2 } from "lucide-react";
-import { Badge, Button, ConfirmModal, DataTable, Select } from "@/components/ui";
+import { Badge, Button, ConfirmModal, DataTableServer, UrlSelect } from "@/components/ui";
 import type { Produto } from "@/db/schema";
 import { cn } from "@/lib/cn";
 import { formatBRL } from "@/lib/format";
 import { alternarStatusProduto, excluirProduto } from "./actions";
 import { ProdutoModal } from "./produto-modal";
 
-type StatusFiltro = "todos" | "ativos" | "inativos";
-
 const iconBtn =
   "inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted transition hover:bg-surface hover:text-ink";
 
-export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
-  const [status, setStatus] = useState<StatusFiltro>("todos");
+export function ProdutosClient({
+  produtos,
+  page,
+  pageCount,
+}: {
+  produtos: Produto[];
+  page: number;
+  pageCount: number;
+}) {
   const [modal, setModal] = useState<{ produto: Produto | null } | null>(null);
   const [excluir, setExcluir] = useState<Produto | null>(null);
   const [pending, startTransition] = useTransition();
-
-  const dados = produtos.filter((p) =>
-    status === "todos"
-      ? true
-      : status === "ativos"
-        ? p.status === "ativo"
-        : p.status === "inativo",
-  );
 
   function toggleStatus(p: Produto) {
     startTransition(() => {
@@ -72,12 +69,7 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
         const p = row.original;
         return (
           <div className="flex justify-end gap-1">
-            <button
-              type="button"
-              title="Editar"
-              onClick={() => setModal({ produto: p })}
-              className={iconBtn}
-            >
+            <button type="button" title="Editar" onClick={() => setModal({ produto: p })} className={iconBtn}>
               <Pencil className="h-4 w-4" />
             </button>
             <button
@@ -86,11 +78,7 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
               onClick={() => toggleStatus(p)}
               className={iconBtn}
             >
-              {p.status === "ativo" ? (
-                <PowerOff className="h-4 w-4" />
-              ) : (
-                <Power className="h-4 w-4" />
-              )}
+              {p.status === "ativo" ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
             </button>
             <button
               type="button"
@@ -107,9 +95,8 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
   ];
 
   const filtro = (
-    <Select
-      value={status}
-      onChange={(v) => setStatus(v as StatusFiltro)}
+    <UrlSelect
+      param="status"
       className="w-36 sm:w-44"
       options={[
         { value: "todos", label: "Todos" },
@@ -128,9 +115,11 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
 
   return (
     <>
-      <DataTable
+      <DataTableServer
         columns={columns}
-        data={dados}
+        data={produtos}
+        page={page}
+        pageCount={pageCount}
         searchPlaceholder="Buscar por nome..."
         filter={filtro}
         actions={acoes}
