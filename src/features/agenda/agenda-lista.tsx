@@ -190,14 +190,14 @@ export function AgendaLista({ items }: { items: AgendaItem[] }) {
                 >
                   <div className="flex items-start justify-between gap-1">
                     <div className="min-w-0 space-y-0.5">
-                      <p className="truncate text-[10px] text-muted2">
-                        {hhmm(inicio)} - {hhmm(fim)} · {fim - inicio}min
-                      </p>
                       <p className="flex items-center gap-1 text-xs font-semibold">
                         <span className="truncate">{item.clienteNome}</span>
                         {item.tipo === "plano" && (
                           <Star className="h-3 w-3 shrink-0 fill-brand-light text-brand-light" />
                         )}
+                      </p>
+                      <p className="truncate text-[10px] text-muted2">
+                        {hhmm(inicio)} - {hhmm(fim)} · {fim - inicio}min
                       </p>
                       <p className="truncate text-[11px] text-muted">
                         {item.servicoNome} - {formatBRL(item.valor)}
