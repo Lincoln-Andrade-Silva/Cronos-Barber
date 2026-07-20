@@ -92,3 +92,36 @@ export const produtos = pgTable("produtos", {
 });
 
 export type Produto = typeof produtos.$inferSelect;
+
+export const statusAgendamento = pgEnum("status_agendamento", [
+  "agendado",
+  "finalizado",
+  "cancelado",
+]);
+export const tipoAgendamento = pgEnum("tipo_agendamento", ["avulso", "plano"]);
+
+export const agendamentos = pgTable("agendamentos", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  clienteId: uuid("cliente_id").notNull(),
+  barbeiroId: uuid("barbeiro_id").notNull(),
+  servicoId: uuid("servico_id").notNull(),
+  dataHora: timestamp("data_hora", { withTimezone: true }).notNull(),
+  status: statusAgendamento("status").notNull().default("agendado"),
+  tipo: tipoAgendamento("tipo").notNull().default("avulso"),
+  valor: numeric("valor", { precision: 10, scale: 2 }).notNull().default("0"),
+  criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type Agendamento = typeof agendamentos.$inferSelect;
+
+export const expediente = pgTable("expediente", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  barbeiroId: uuid("barbeiro_id").notNull(),
+  diaSemana: integer("dia_semana").notNull(),
+  horaInicio: text("hora_inicio").notNull(),
+  horaFim: text("hora_fim").notNull(),
+  almocoInicio: text("almoco_inicio"),
+  almocoFim: text("almoco_fim"),
+});
+
+export type Expediente = typeof expediente.$inferSelect;

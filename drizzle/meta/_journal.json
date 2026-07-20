@@ -71,6 +71,20 @@
       "when": 1784509810867,
       "tag": "0009_servicos_produtos_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1784513954293,
+      "tag": "0010_flimsy_miss_america",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1784513979440,
+      "tag": "0011_agendamentos_rls",
+      "breakpoints": true
     }
   ]
 }
