@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui";
 
@@ -10,9 +10,13 @@ function ymd(d: Date): string {
 
 export function DayNav({ data }: { data: string }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   function ir(novaData: string) {
-    router.push(`/admin/agenda?data=${novaData}`);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("data", novaData);
+    router.push(`${pathname}?${params.toString()}`);
   }
 
   function deslocar(dias: number) {

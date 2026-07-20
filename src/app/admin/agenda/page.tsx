@@ -6,7 +6,8 @@ import { Card, PageHeader } from "@/components/ui";
 import { instanteSlot } from "@/lib/disponibilidade";
 import { formatBRL } from "@/lib/format";
 import { DayNav } from "@/features/agenda/day-nav";
-import { AgendaLista, type AgendaItem, type BarbeiroOpcao } from "@/features/agenda/agenda-lista";
+import { BarberSelect } from "@/features/agenda/barber-select";
+import { AgendaLista, type AgendaItem } from "@/features/agenda/agenda-lista";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ function hojeSP(): string {
 export default async function AgendaPage({
   searchParams,
 }: {
-  searchParams: { data?: string };
+  searchParams: { data?: string; barbeiro?: string };
 }) {
   const data = searchParams.data ?? hojeSP();
   const inicioTs = instanteSlot(data, "00:00");
@@ -33,6 +34,7 @@ export default async function AgendaPage({
         clienteNome: profiles.nome,
         barbeiroId: agendamentos.barbeiroId,
         servicoNome: servicos.nome,
+        duracaoMinutos: servicos.duracaoMinutos,
       })
       .from(agendamentos)
       .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
@@ -46,12 +48,16 @@ export default async function AgendaPage({
       .orderBy(asc(barbeiros.nome)),
   ]);
 
-  const validos = rows.filter((r) => r.status !== "cancelado");
-  const finalizados = rows.filter((r) => r.status === "finalizado");
-  const cancelados = rows.filter((r) => r.status === "cancelado");
+  const barbeiroSel = searchParams.barbeiro ?? listaBarbeiros[0]?.id ?? "";
+  const rowsBarbeiro = rows.filter((r) => r.barbeiroId === barbeiroSel);
+
+  const validos = rowsBarbeiro.filter((r) => r.status !== "cancelado");
+  const finalizados = rowsBarbeiro.filter((r) => r.status === "finalizado");
+  const cancelados = rowsBarbeiro.filter((r) => r.status === "cancelado");
   const total = validos.reduce((soma, r) => soma + Number(r.valor), 0);
   const ticket = validos.length > 0 ? total / validos.length : 0;
-  const taxaCancelamento = rows.length > 0 ? (cancelados.length / rows.length) * 100 : 0;
+  const taxaCancelamento =
+    rowsBarbeiro.length > 0 ? (cancelados.length / rowsBarbeiro.length) * 100 : 0;
 
   const cards = [
     { label: "Faturamento", valor: formatBRL(total), icon: DollarSign },
@@ -61,7 +67,7 @@ export default async function AgendaPage({
     { label: "Ticket médio", valor: formatBRL(ticket), icon: Receipt },
   ];
 
-  const items: AgendaItem[] = rows.map((r) => ({
+  const items: AgendaItem[] = rowsBarbeiro.map((r) => ({
     id: r.id,
     dataHoraISO: r.dataHora.toISOString(),
     status: r.status,
@@ -69,16 +75,22 @@ export default async function AgendaPage({
     clienteNome: r.clienteNome,
     barbeiroId: r.barbeiroId,
     servicoNome: r.servicoNome,
+    duracaoMinutos: r.duracaoMinutos,
   }));
-
-  const opcoesBarbeiros: BarbeiroOpcao[] = listaBarbeiros;
 
   return (
     <div>
       <PageHeader
         title="Agenda"
         description="Agendamentos do dia por profissional."
-        action={<DayNav data={data} />}
+        action={
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <DayNav data={data} />
+            {listaBarbeiros.length > 0 && (
+              <BarberSelect barbeiros={listaBarbeiros} atual={barbeiroSel} />
+            )}
+          </div>
+        }
       />
 
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
@@ -93,7 +105,7 @@ export default async function AgendaPage({
         ))}
       </div>
 
-      <AgendaLista items={items} barbeiros={opcoesBarbeiros} />
+      <AgendaLista items={items} />
     </div>
   );
 }
