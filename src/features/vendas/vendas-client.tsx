@@ -118,9 +118,10 @@ export function VendasClient({
     <UrlSelect
       param="prof"
       className="w-40 sm:w-48"
+      withAvatar
       options={[
         { value: "todos", label: "Todos" },
-        ...barbeiros.map((b) => ({ value: b.id, label: b.nome })),
+        ...barbeiros.map((b) => ({ value: b.id, label: b.nome, avatarUrl: b.fotoUrl })),
       ]}
     />
   );

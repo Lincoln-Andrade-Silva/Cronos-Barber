@@ -1,5 +1,5 @@
 import { and, asc, eq, gte, lt } from "drizzle-orm";
-import { Ban, CalendarCheck, CheckCircle2, DollarSign, Receipt } from "lucide-react";
+import { Ban, CalendarCheck, CheckCircle2, DollarSign } from "lucide-react";
 import { db } from "@/db";
 import { agendamentos, barbeiros, profiles, servicos } from "@/db/schema";
 import { Card, PageHeader } from "@/components/ui";
@@ -55,10 +55,9 @@ export default async function AgendaPage({
   const validos = rowsBarbeiro.filter((r) => r.status !== "cancelado");
   const finalizados = rowsBarbeiro.filter((r) => r.status === "finalizado");
   const cancelados = rowsBarbeiro.filter((r) => r.status === "cancelado");
-  // Atendimentos cobertos por plano não geram receita, então ficam fora do ticket médio.
+  // Atendimentos cobertos por plano não geram receita.
   const pagantes = validos.filter((r) => r.tipo !== "plano");
   const total = pagantes.reduce((soma, r) => soma + Number(r.valor), 0);
-  const ticket = pagantes.length > 0 ? total / pagantes.length : 0;
   const taxaCancelamento =
     rowsBarbeiro.length > 0 ? (cancelados.length / rowsBarbeiro.length) * 100 : 0;
 
@@ -67,8 +66,9 @@ export default async function AgendaPage({
     { label: "Atendimentos", valor: String(validos.length), icon: CalendarCheck },
     { label: "Finalizados", valor: String(finalizados.length), icon: CheckCircle2 },
     { label: "Taxa de cancelamento", valor: `${taxaCancelamento.toFixed(0)}%`, icon: Ban },
-    { label: "Ticket médio", valor: formatBRL(ticket), icon: Receipt },
   ];
+
+  const barbeiroAtivo = listaBarbeiros.find((b) => b.id === barbeiroSel);
 
   const items: AgendaItem[] = rowsBarbeiro.map((r) => ({
     id: r.id,
@@ -97,7 +97,7 @@ export default async function AgendaPage({
         }
       />
 
-      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {cards.map(({ label, valor, icon: Icon }) => (
           <Card key={label} className="p-4">
             <div className="flex items-center justify-between gap-2">
@@ -109,7 +109,11 @@ export default async function AgendaPage({
         ))}
       </div>
 
-      <AgendaLista items={items} />
+      <AgendaLista
+        items={items}
+        barbeiroNome={barbeiroAtivo?.nome}
+        barbeiroFotoUrl={barbeiroAtivo?.fotoUrl}
+      />
     </div>
   );
 }

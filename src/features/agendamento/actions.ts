@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { and, eq, gte, lt, ne } from "drizzle-orm";
 import { db } from "@/db";
-import { agendamentos, servicos } from "@/db/schema";
+import { agendamentos, expediente, servicos } from "@/db/schema";
 import { getCurrentProfile } from "@/lib/auth";
 import { getBarbeariaInfo } from "@/lib/barbearia";
 import { servicoCobertoPorPlano } from "@/lib/plano";
@@ -49,18 +49,42 @@ export async function getHorariosDisponiveis(
   const [servico] = await db.select().from(servicos).where(eq(servicos.id, servicoId));
   if (!servico) return [];
 
-  const info = await getBarbeariaInfo();
-  const horario = normalizarHorario(info?.horario);
   const diaSemana = new Date(`${data}T12:00:00${"-03:00"}`).getDay();
-  const dia = horario.find((h) => h.dia === diaSemana);
-  if (!dia || !dia.aberto) return [];
+
+  let abre: string;
+  let fecha: string;
+  let almoco: IntervaloOcupado | null = null;
+
+  const exp = await db.select().from(expediente).where(eq(expediente.barbeiroId, barbeiroId));
+  if (exp.length > 0) {
+    // Barbeiro com expediente próprio: sem linha no dia = folga.
+    const doDia = exp.find((e) => e.diaSemana === diaSemana);
+    if (!doDia) return [];
+    abre = doDia.horaInicio;
+    fecha = doDia.horaFim;
+    if (doDia.almocoInicio && doDia.almocoFim) {
+      almoco = {
+        inicio: instanteSlot(data, doDia.almocoInicio),
+        fim: instanteSlot(data, doDia.almocoFim),
+      };
+    }
+  } else {
+    // Sem expediente cadastrado: usa o horário geral da barbearia.
+    const info = await getBarbeariaInfo();
+    const horario = normalizarHorario(info?.horario);
+    const dia = horario.find((h) => h.dia === diaSemana);
+    if (!dia || !dia.aberto) return [];
+    abre = dia.abre;
+    fecha = dia.fecha;
+  }
 
   const ocupados = await ocupadosDoDia(barbeiroId, data);
+  if (almoco) ocupados.push(almoco);
 
   return gerarHorariosDisponiveis({
     data,
-    abre: dia.abre,
-    fecha: dia.fecha,
+    abre,
+    fecha,
     duracaoMinutos: servico.duracaoMinutos,
     passoMinutos: PASSO_MINUTOS,
     ocupados,

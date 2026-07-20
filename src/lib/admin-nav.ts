@@ -25,15 +25,25 @@ export interface AdminNavSection {
 // Menu lateral do admin, dividido por categorias. `ready` marca o que já existe.
 export const ADMIN_NAV: AdminNavSection[] = [
   {
-    label: "Principal",
+    label: "Visão geral",
     items: [
       { label: "Dashboard", href: "/admin", icon: Gauge, ready: true },
+      { label: "Relatórios", href: "/admin/relatorios", icon: BarChart3 },
+    ],
+  },
+  {
+    label: "Operação",
+    items: [
       { label: "Agenda", href: "/admin/agenda", icon: CalendarDays, ready: true },
-      { label: "Barbeiros", href: "/admin/barbeiros", icon: Users, ready: true },
-      { label: "Cadastros", href: "/admin/cadastros", icon: Boxes, ready: true },
       { label: "Vendas", href: "/admin/vendas", icon: ShoppingCart, ready: true },
       { label: "Assinaturas", href: "/admin/assinaturas", icon: CreditCard, ready: true },
-      { label: "Relatórios", href: "/admin/relatorios", icon: BarChart3 },
+    ],
+  },
+  {
+    label: "Gestão",
+    items: [
+      { label: "Barbeiros", href: "/admin/barbeiros", icon: Users, ready: true },
+      { label: "Cadastros", href: "/admin/cadastros", icon: Boxes, ready: true },
     ],
   },
   {
