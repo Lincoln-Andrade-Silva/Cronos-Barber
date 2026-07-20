@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, ChevronLeft, Clock, Scissors } from "lucide-react";
+import { Check, ChevronLeft, Clock, Scissors, Star } from "lucide-react";
 import { Button, Card, FormError } from "@/components/ui";
 import type { Barbeiro, Servico } from "@/db/schema";
 import { cn } from "@/lib/cn";
@@ -38,11 +38,14 @@ const PASSOS = ["Serviço", "Profissional", "Horário"];
 export function AgendarWizard({
   servicos,
   barbeiros,
+  servicosCobertos,
 }: {
   servicos: Servico[];
   barbeiros: Barbeiro[];
+  servicosCobertos: string[];
 }) {
   const router = useRouter();
+  const cobertos = new Set(servicosCobertos);
   const [passo, setPasso] = useState(0);
   const [servico, setServico] = useState<Servico | null>(null);
   const [barbeiro, setBarbeiro] = useState<Barbeiro | null>(null);
@@ -172,14 +175,26 @@ export function AgendarWizard({
               }}
               className="flex items-center justify-between gap-3 rounded-xl border border-line bg-panel p-4 text-left transition hover:border-brand/40 hover:bg-surface"
             >
-              <div>
-                <p className="font-semibold">{s.nome}</p>
+              <div className="min-w-0">
+                <p className="flex items-center gap-1 font-semibold">
+                  <span className="truncate">{s.nome}</span>
+                  {cobertos.has(s.id) && (
+                    <Star className="h-3.5 w-3.5 shrink-0 fill-brand-light text-brand-light" />
+                  )}
+                </p>
                 <p className="mt-0.5 flex items-center gap-1 text-xs text-muted">
                   <Clock className="h-3 w-3" />
                   {formatDuracao(s.duracaoMinutos)}
                 </p>
               </div>
-              <span className="font-semibold text-brand-light">{formatBRL(s.preco)}</span>
+              {cobertos.has(s.id) ? (
+                <span className="shrink-0 text-right">
+                  <span className="block text-xs text-muted2 line-through">{formatBRL(s.preco)}</span>
+                  <span className="font-semibold text-emerald-400">Grátis</span>
+                </span>
+              ) : (
+                <span className="shrink-0 font-semibold text-brand-light">{formatBRL(s.preco)}</span>
+              )}
             </button>
           ))}
           {servicos.length === 0 && (
@@ -271,6 +286,13 @@ export function AgendarWizard({
           )}
 
           {erro && <FormError>{erro}</FormError>}
+
+          {servico && cobertos.has(servico.id) && (
+            <p className="flex items-center gap-1.5 text-xs text-muted">
+              <Star className="h-3.5 w-3.5 shrink-0 fill-brand-light text-brand-light" />
+              Grátis pelo seu plano nos dias cobertos; fora deles é cobrado o valor normal.
+            </p>
+          )}
 
           <Button
             className="w-full"

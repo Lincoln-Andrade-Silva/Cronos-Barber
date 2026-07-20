@@ -5,6 +5,7 @@ import { ChevronLeft } from "lucide-react";
 import { db } from "@/db";
 import { barbeiros, servicos } from "@/db/schema";
 import { getCurrentProfile } from "@/lib/auth";
+import { servicosCobertosDoCliente } from "@/lib/plano";
 import { AgendarWizard } from "@/features/agendamento/agendar-wizard";
 
 export const dynamic = "force-dynamic";
@@ -13,9 +14,10 @@ export default async function AgendarPage() {
   const profile = await getCurrentProfile();
   if (profile.tipo === "admin") redirect("/admin");
 
-  const [listaServicos, listaBarbeiros] = await Promise.all([
+  const [listaServicos, listaBarbeiros, cobertos] = await Promise.all([
     db.select().from(servicos).where(eq(servicos.ativo, true)).orderBy(asc(servicos.nome)),
     db.select().from(barbeiros).where(eq(barbeiros.ativo, true)).orderBy(asc(barbeiros.nome)),
+    servicosCobertosDoCliente(profile.id),
   ]);
 
   return (
@@ -28,7 +30,11 @@ export default async function AgendarPage() {
         Início
       </Link>
       <h1 className="mb-6 text-2xl font-extrabold tracking-tight">Agendar horário</h1>
-      <AgendarWizard servicos={listaServicos} barbeiros={listaBarbeiros} />
+      <AgendarWizard
+        servicos={listaServicos}
+        barbeiros={listaBarbeiros}
+        servicosCobertos={cobertos}
+      />
     </main>
   );
 }

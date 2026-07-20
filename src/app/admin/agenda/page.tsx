@@ -30,6 +30,7 @@ export default async function AgendaPage({
         id: agendamentos.id,
         dataHora: agendamentos.dataHora,
         status: agendamentos.status,
+        tipo: agendamentos.tipo,
         valor: agendamentos.valor,
         clienteNome: profiles.nome,
         barbeiroId: agendamentos.barbeiroId,
@@ -54,8 +55,10 @@ export default async function AgendaPage({
   const validos = rowsBarbeiro.filter((r) => r.status !== "cancelado");
   const finalizados = rowsBarbeiro.filter((r) => r.status === "finalizado");
   const cancelados = rowsBarbeiro.filter((r) => r.status === "cancelado");
-  const total = validos.reduce((soma, r) => soma + Number(r.valor), 0);
-  const ticket = validos.length > 0 ? total / validos.length : 0;
+  // Atendimentos cobertos por plano não geram receita, então ficam fora do ticket médio.
+  const pagantes = validos.filter((r) => r.tipo !== "plano");
+  const total = pagantes.reduce((soma, r) => soma + Number(r.valor), 0);
+  const ticket = pagantes.length > 0 ? total / pagantes.length : 0;
   const taxaCancelamento =
     rowsBarbeiro.length > 0 ? (cancelados.length / rowsBarbeiro.length) * 100 : 0;
 
@@ -71,6 +74,7 @@ export default async function AgendaPage({
     id: r.id,
     dataHoraISO: r.dataHora.toISOString(),
     status: r.status,
+    tipo: r.tipo,
     valor: r.valor,
     clienteNome: r.clienteNome,
     barbeiroId: r.barbeiroId,

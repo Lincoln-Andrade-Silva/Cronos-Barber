@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Check, Trash2, X } from "lucide-react";
+import { Check, Star, Trash2, X } from "lucide-react";
 import { ConfirmModal } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { formatBRL } from "@/lib/format";
@@ -18,6 +18,7 @@ export interface AgendaItem {
   id: string;
   dataHoraISO: string;
   status: StatusAg;
+  tipo: "avulso" | "plano";
   valor: string;
   clienteNome: string;
   barbeiroId: string;
@@ -25,7 +26,56 @@ export interface AgendaItem {
   duracaoMinutos: number;
 }
 
-const PX_HORA = 80;
+interface Posicionado {
+  item: AgendaItem;
+  inicio: number;
+  fim: number;
+  col: number;
+  colunas: number;
+}
+
+/** Distribui em colunas lado a lado os atendimentos com horários sobrepostos. */
+function posicionar(items: AgendaItem[]): Posicionado[] {
+  const eventos: Posicionado[] = items
+    .map((item) => {
+      const inicio = minutosDoDia(item.dataHoraISO);
+      return { item, inicio, fim: inicio + item.duracaoMinutos, col: 0, colunas: 1 };
+    })
+    .sort((a, b) => a.inicio - b.inicio || a.fim - b.fim);
+
+  let grupo: Posicionado[] = [];
+  let fimGrupo = -Infinity;
+
+  const fecharGrupo = () => {
+    const fimPorColuna: number[] = [];
+    for (const ev of grupo) {
+      let coluna = fimPorColuna.findIndex((fim) => fim <= ev.inicio);
+      if (coluna === -1) {
+        coluna = fimPorColuna.length;
+        fimPorColuna.push(ev.fim);
+      } else {
+        fimPorColuna[coluna] = ev.fim;
+      }
+      ev.col = coluna;
+    }
+    for (const ev of grupo) ev.colunas = fimPorColuna.length;
+  };
+
+  for (const ev of eventos) {
+    if (grupo.length && ev.inicio >= fimGrupo) {
+      fecharGrupo();
+      grupo = [];
+      fimGrupo = -Infinity;
+    }
+    grupo.push(ev);
+    fimGrupo = Math.max(fimGrupo, ev.fim);
+  }
+  if (grupo.length) fecharGrupo();
+
+  return eventos;
+}
+
+const PX_HORA = 104;
 
 function minutosDoDia(iso: string): number {
   const t = new Date(iso).toLocaleTimeString("pt-BR", {
@@ -80,10 +130,9 @@ export function AgendaLista({ items }: { items: AgendaItem[] }) {
   const finalizados = items.filter((i) => i.status === "finalizado").length;
   const cancelados = items.filter((i) => i.status === "cancelado").length;
 
-  const inicios = items.map((i) => minutosDoDia(i.dataHoraISO));
-  const fins = items.map((i, idx) => inicios[idx] + i.duracaoMinutos);
-  const minInicio = inicios.length ? Math.min(...inicios) : 8 * 60;
-  const maxFim = fins.length ? Math.max(...fins) : 19 * 60;
+  const posicionados = posicionar(items);
+  const minInicio = posicionados.length ? Math.min(...posicionados.map((p) => p.inicio)) : 8 * 60;
+  const maxFim = posicionados.length ? Math.max(...posicionados.map((p) => p.fim)) : 19 * 60;
   const inicioGrade = Math.floor(Math.min(8 * 60, minInicio) / 60) * 60;
   const fimGrade = Math.ceil(Math.max(19 * 60, maxFim) / 60) * 60;
   const alturaTotal = ((fimGrade - inicioGrade) / 60) * PX_HORA;
@@ -100,7 +149,7 @@ export function AgendaLista({ items }: { items: AgendaItem[] }) {
         <span className="text-muted2">{cancelados} cancelados</span>
       </div>
 
-      <div className="max-h-[68vh] overflow-y-auto rounded-2xl border border-line bg-panel">
+      <div className="no-scrollbar max-h-[68vh] overflow-y-auto rounded-2xl border border-line bg-panel">
         <div className="relative" style={{ height: alturaTotal }}>
           {linhas.map((m) => (
             <div
@@ -121,63 +170,77 @@ export function AgendaLista({ items }: { items: AgendaItem[] }) {
             </p>
           )}
 
-          {items.map((item) => {
-            const inicio = minutosDoDia(item.dataHoraISO);
-            const top = ((inicio - inicioGrade) / 60) * PX_HORA;
-            const altura = Math.max((item.duracaoMinutos / 60) * PX_HORA, 36);
-            return (
-              <div
-                key={item.id}
-                className={cn(
-                  "absolute left-14 right-2 overflow-hidden rounded-lg border border-l-4 bg-surface px-2 py-1.5",
-                  bordaStatus[item.status],
-                )}
-                style={{ top: top + 2, height: altura - 4 }}
-              >
-                <div className="flex items-start justify-between gap-1">
-                  <div className="min-w-0">
-                    <p className="truncate text-xs font-semibold">{item.clienteNome}</p>
-                    <p className="truncate text-[11px] text-muted">
-                      {hhmm(inicio)}-{hhmm(inicio + item.duracaoMinutos)} · {item.servicoNome}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 gap-1">
-                    {item.status === "agendado" && (
-                      <>
-                        <button
-                          type="button"
-                          title="Finalizar"
-                          disabled={pending}
-                          onClick={() => setAcao({ item, tipo: "finalizar" })}
-                          className={cn(acaoBtn, "hover:border-emerald-500/40 hover:text-emerald-400")}
-                        >
-                          <Check className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          title="Cancelar"
-                          disabled={pending}
-                          onClick={() => setAcao({ item, tipo: "cancelar" })}
-                          className={cn(acaoBtn, "hover:border-amber-500/40 hover:text-amber-400")}
-                        >
-                          <X className="h-3.5 w-3.5" />
-                        </button>
-                      </>
-                    )}
-                    <button
-                      type="button"
-                      title="Excluir"
-                      disabled={pending}
-                      onClick={() => setAcao({ item, tipo: "excluir" })}
-                      className={cn(acaoBtn, "hover:border-red-400 hover:text-red-400")}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+          <div className="absolute inset-y-0 left-14 right-2">
+            {posicionados.map(({ item, inicio, fim, col, colunas }) => {
+              const top = ((inicio - inicioGrade) / 60) * PX_HORA;
+              const altura = Math.max(((fim - inicio) / 60) * PX_HORA, 48);
+              return (
+                <div
+                  key={item.id}
+                  className={cn(
+                    "absolute overflow-hidden rounded-lg border border-l-4 bg-surface px-2 py-1.5",
+                    bordaStatus[item.status],
+                  )}
+                  style={{
+                    top: top + 2,
+                    height: altura - 4,
+                    left: `calc(${(col / colunas) * 100}% + ${col === 0 ? 0 : 2}px)`,
+                    width: `calc(${100 / colunas}% - ${colunas === 1 ? 0 : 4}px)`,
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-1">
+                    <div className="min-w-0 space-y-0.5">
+                      <p className="flex items-center gap-1 text-xs font-semibold">
+                        <span className="truncate">{item.clienteNome}</span>
+                        {item.tipo === "plano" && (
+                          <Star className="h-3 w-3 shrink-0 fill-brand-light text-brand-light" />
+                        )}
+                      </p>
+                      <p className="truncate text-[11px] text-muted">
+                        {item.servicoNome} - {formatBRL(item.valor)}
+                      </p>
+                      <p className="truncate text-[10px] text-muted2">
+                        {hhmm(inicio)} - {hhmm(fim)} · {fim - inicio}min
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 gap-1">
+                      {item.status === "agendado" && (
+                        <>
+                          <button
+                            type="button"
+                            title="Finalizar"
+                            disabled={pending}
+                            onClick={() => setAcao({ item, tipo: "finalizar" })}
+                            className={cn(acaoBtn, "hover:border-emerald-500/40 hover:text-emerald-400")}
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            title="Cancelar"
+                            disabled={pending}
+                            onClick={() => setAcao({ item, tipo: "cancelar" })}
+                            className={cn(acaoBtn, "hover:border-amber-500/40 hover:text-amber-400")}
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </>
+                      )}
+                      <button
+                        type="button"
+                        title="Excluir"
+                        disabled={pending}
+                        onClick={() => setAcao({ item, tipo: "excluir" })}
+                        className={cn(acaoBtn, "hover:border-red-400 hover:text-red-400")}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
 

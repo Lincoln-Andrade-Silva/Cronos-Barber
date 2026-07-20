@@ -6,6 +6,7 @@ import { db } from "@/db";
 import { agendamentos, servicos } from "@/db/schema";
 import { getCurrentProfile } from "@/lib/auth";
 import { getBarbeariaInfo } from "@/lib/barbearia";
+import { servicoCobertoPorPlano } from "@/lib/plano";
 import { normalizarHorario } from "@/features/barbearia/horario";
 import {
   gerarHorariosDisponiveis,
@@ -97,14 +98,16 @@ export async function criarAgendamento(
     return { error: "Esse horário acabou de ser ocupado. Escolha outro." };
   }
 
+  const coberto = await servicoCobertoPorPlano(profile.id, servicoId, data, inicio);
+
   try {
     await db.insert(agendamentos).values({
       clienteId: profile.id,
       barbeiroId,
       servicoId,
       dataHora: inicio,
-      valor: servico.preco,
-      tipo: "avulso",
+      valor: coberto ? "0" : servico.preco,
+      tipo: coberto ? "plano" : "avulso",
       status: "agendado",
     });
   } catch (err) {
