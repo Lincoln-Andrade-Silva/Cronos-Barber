@@ -27,7 +27,7 @@ export const ADMIN_NAV: AdminNavSection[] = [
     label: "Principal",
     items: [
       { label: "Dashboard", href: "/admin", icon: Gauge, ready: true },
-      { label: "Agenda", href: "/admin/agenda", icon: CalendarDays },
+      { label: "Agenda", href: "/admin/agenda", icon: CalendarDays, ready: true },
       { label: "Cadastros", href: "/admin/cadastros", icon: Boxes, ready: true },
       { label: "Vendas", href: "/admin/vendas", icon: ShoppingCart },
       { label: "Assinaturas", href: "/admin/assinaturas", icon: CreditCard },
