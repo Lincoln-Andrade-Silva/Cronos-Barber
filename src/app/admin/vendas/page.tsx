@@ -28,7 +28,7 @@ export default async function VendasPage({
       .where(eq(produtos.status, "ativo"))
       .orderBy(asc(produtos.nome)),
     db
-      .select({ id: barbeiros.id, nome: barbeiros.nome })
+      .select({ id: barbeiros.id, nome: barbeiros.nome, fotoUrl: barbeiros.fotoUrl })
       .from(barbeiros)
       .where(eq(barbeiros.ativo, true))
       .orderBy(asc(barbeiros.nome)),

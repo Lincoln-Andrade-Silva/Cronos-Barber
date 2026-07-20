@@ -109,7 +109,15 @@ const TEXTOS: Record<TipoAcao, { titulo: string; verbo: string; label: string }>
   excluir: { titulo: "Excluir agendamento", verbo: "excluir", label: "Excluir" },
 };
 
-export function AgendaLista({ items }: { items: AgendaItem[] }) {
+export function AgendaLista({
+  items,
+  barbeiroNome,
+  barbeiroFotoUrl,
+}: {
+  items: AgendaItem[];
+  barbeiroNome?: string;
+  barbeiroFotoUrl?: string | null;
+}) {
   const [acao, setAcao] = useState<{ item: AgendaItem; tipo: TipoAcao } | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -142,11 +150,29 @@ export function AgendaLista({ items }: { items: AgendaItem[] }) {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
-        <span className="text-muted">{items.length} atend.</span>
-        <span className="text-brand-light">{pendentes} pendentes</span>
-        <span className="text-emerald-400">{finalizados} finalizados</span>
-        <span className="text-muted2">{cancelados} cancelados</span>
+      <div className="flex items-center gap-3 rounded-xl border border-line bg-panel px-4 py-3">
+        {barbeiroNome &&
+          (barbeiroFotoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={barbeiroFotoUrl}
+              alt={barbeiroNome}
+              className="h-10 w-10 shrink-0 rounded-full border border-line object-cover"
+            />
+          ) : (
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-bold text-white">
+              {barbeiroNome.charAt(0).toUpperCase()}
+            </span>
+          ))}
+        <div className="min-w-0">
+          {barbeiroNome && <p className="truncate font-semibold">{barbeiroNome}</p>}
+          <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs">
+            <span className="text-muted">{items.length} atend.</span>
+            <span className="text-brand-light">{pendentes} pendentes</span>
+            <span className="text-emerald-400">{finalizados} finalizados</span>
+            <span className="text-muted2">{cancelados} cancelados</span>
+          </div>
+        </div>
       </div>
 
       <div className="no-scrollbar max-h-[68vh] overflow-y-auto rounded-2xl border border-line bg-panel">

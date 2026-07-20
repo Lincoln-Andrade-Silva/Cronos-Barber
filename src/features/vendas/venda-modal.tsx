@@ -13,6 +13,7 @@ export interface OpcaoProduto {
 export interface Opcao {
   id: string;
   nome: string;
+  fotoUrl?: string | null;
 }
 
 export function VendaModal({
@@ -81,9 +82,10 @@ export function VendaModal({
           <Select
             value={barbeiroId}
             onChange={setBarbeiroId}
+            withAvatar
             options={[
               { value: "", label: "Selecione o profissional" },
-              ...barbeiros.map((b) => ({ value: b.id, label: b.nome })),
+              ...barbeiros.map((b) => ({ value: b.id, label: b.nome, avatarUrl: b.fotoUrl })),
             ]}
           />
         </Field>

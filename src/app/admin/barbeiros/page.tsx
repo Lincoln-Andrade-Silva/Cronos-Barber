@@ -1,23 +1,25 @@
 import { and, asc, count, eq, ilike, type SQL } from "drizzle-orm";
 import { db } from "@/db";
-import { barbeiros } from "@/db/schema";
-import { PageHeader, UrlTabBar, type TabItem } from "@/components/ui";
+import { barbeiros, expediente } from "@/db/schema";
+import { Card, PageHeader, UrlTabBar, type TabItem } from "@/components/ui";
 import { PAGE_SIZE, offsetDaPagina, parsePagina, totalPaginas } from "@/lib/pagination";
 import { BarbeirosClient } from "@/features/barbeiros/barbeiros-client";
 import { ComissaoForm } from "@/features/comissao/comissao-form";
+import { ExpedienteForm } from "@/features/expediente/expediente-form";
+import { ExpedienteBarbeiroSelect } from "@/features/expediente/barbeiro-select";
 
 export const dynamic = "force-dynamic";
 
 const TABS = [
   { key: "cadastro", label: "Cadastro", ready: true },
-  { key: "expediente", label: "Expediente", ready: false },
+  { key: "expediente", label: "Expediente", ready: true },
   { key: "comissao", label: "Comissão", ready: true },
 ] as const satisfies readonly TabItem[];
 
 export default async function BarbeirosPage({
   searchParams,
 }: {
-  searchParams: { tab?: string; page?: string; q?: string; status?: string };
+  searchParams: { tab?: string; page?: string; q?: string; status?: string; barbeiro?: string };
 }) {
   const tab = searchParams.tab ?? "cadastro";
 
@@ -26,6 +28,36 @@ export default async function BarbeirosPage({
   if (tab === "comissao") {
     const lista = await db.select().from(barbeiros).orderBy(asc(barbeiros.nome));
     conteudo = <ComissaoForm barbeiros={lista} />;
+  } else if (tab === "expediente") {
+    const ativos = await db
+      .select({ id: barbeiros.id, nome: barbeiros.nome, fotoUrl: barbeiros.fotoUrl })
+      .from(barbeiros)
+      .where(eq(barbeiros.ativo, true))
+      .orderBy(asc(barbeiros.nome));
+
+    if (ativos.length === 0) {
+      conteudo = (
+        <Card>
+          <p className="text-sm text-muted">Cadastre um barbeiro para definir o expediente.</p>
+        </Card>
+      );
+    } else {
+      const barbeiroSel = searchParams.barbeiro ?? ativos[0].id;
+      const rows = await db
+        .select()
+        .from(expediente)
+        .where(eq(expediente.barbeiroId, barbeiroSel));
+
+      conteudo = (
+        <div className="space-y-4">
+          <ExpedienteBarbeiroSelect
+            barbeiros={ativos}
+            atual={barbeiroSel}
+          />
+          <ExpedienteForm key={barbeiroSel} barbeiroId={barbeiroSel} rows={rows} />
+        </div>
+      );
+    }
   } else {
     const pagina = parsePagina(searchParams.page);
     const q = searchParams.q?.trim() ?? "";

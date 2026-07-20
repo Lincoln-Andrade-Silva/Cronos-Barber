@@ -9,11 +9,13 @@ export function UrlSelect({
   options,
   defaultValue = "todos",
   className,
+  withAvatar,
 }: {
   param: string;
   options: SelectOption[];
   defaultValue?: string;
   className?: string;
+  withAvatar?: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -29,5 +31,13 @@ export function UrlSelect({
     );
   }
 
-  return <Select value={value} onChange={onChange} options={options} className={className} />;
+  return (
+    <Select
+      value={value}
+      onChange={onChange}
+      options={options}
+      className={className}
+      withAvatar={withAvatar}
+    />
+  );
 }

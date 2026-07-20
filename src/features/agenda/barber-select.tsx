@@ -45,7 +45,8 @@ export function BarberSelect({
     <Select
       value={atual}
       onChange={selecionar}
-      options={barbeiros.map((b) => ({ value: b.id, label: b.nome }))}
+      withAvatar
+      options={barbeiros.map((b) => ({ value: b.id, label: b.nome, avatarUrl: b.fotoUrl }))}
       className="w-full sm:w-52"
     />
   );

@@ -74,16 +74,18 @@ A marca exibida (login, sidebar, home) vem de `getBarbeariaNome()` (`src/lib/bar
 
 - [x] **Fase 0**: Setup (Next.js, Tailwind, Drizzle, Supabase conectado)
 - [x] **Fase 1**: Auth (registro/login, `profiles` com tipo/status, proteção de rotas, seed admin, design system base)
-- [x] **Fase 2**: Cadastros base (Barbeiros, Serviços, Produtos em `/admin/cadastros`; Config. Barbearia com logo/horário/endereço; Home do cliente)
-- [ ] **Fase 3**: Agendamento (fluxo do cliente + conflito de horário + expediente)
-- [ ] **Fase 4**: Histórico do cliente
-- [ ] **Fase 5**: Financeiro básico (faturamento do dia)
-- [ ] **Fase 6**: Planos e Assinaturas
-- [ ] **Fase 7**: Vendas de Produtos
-- [ ] **Fase 8**: Comissão
+- [x] **Fase 2**: Cadastros base (Serviços, Produtos, Config. Barbearia com logo/horário/endereço; Home do cliente)
+- [x] **Fase 3**: Agendamento (fluxo do cliente + conflito de horário + expediente por barbeiro)
+- [x] **Fase 4**: Histórico do cliente
+- [x] **Fase 5**: Financeiro básico (faturamento do dia)
+- [x] **Fase 6**: Planos e Assinaturas (cobertura no agendamento: dias válidos + limite de usos)
+- [x] **Fase 7**: Vendas de Produtos
+- [x] **Fase 8**: Comissão
 - [ ] **Fase 9**: Dashboard (cards + gráficos)
 - [ ] **Fase 10**: Relatórios
 - [ ] **Fase 11**: Gestão (atendimentos, produtos, vendas)
-- [ ] **Fase 12**: Configurações (Usuários, Expediente)
+- [ ] **Fase 12**: Configurações — [x] Expediente por barbeiro · [ ] Usuários
 - [ ] **Fase 13**: Deploy (Vercel + Supabase + domínio)
 - [ ] **Fase 14**: Checklist de reuso do template
+
+> Menu do admin reorganizado em Visão geral (Dashboard, Relatórios), Operação (Agenda, Vendas, Assinaturas), Gestão (Barbeiros, Cadastros) e Sistema (Configurações).
