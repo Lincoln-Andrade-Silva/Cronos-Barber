@@ -81,7 +81,7 @@ A marca exibida (login, sidebar, home) vem de `getBarbeariaNome()` (`src/lib/bar
 - [x] **Fase 6**: Planos e Assinaturas (cobertura no agendamento: dias válidos + limite de usos)
 - [x] **Fase 7**: Vendas de Produtos
 - [x] **Fase 8**: Comissão
-- [ ] **Fase 9**: Dashboard (cards + gráficos)
+- [x] **Fase 9**: Dashboard (KPIs + gráficos + rankings, com filtro por período)
 - [x] **Fase 10**: Relatórios (painéis Financeiro, Atendimentos, Comissões, Assinaturas e Produtos, com filtro por período e gráficos)
 - [ ] **Fase 11**: Gestão (atendimentos, produtos, vendas)
 - [ ] **Fase 12**: Configurações — [x] Expediente por barbeiro · [x] Usuários (CRUD em Cadastros)

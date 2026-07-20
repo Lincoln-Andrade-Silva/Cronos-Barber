@@ -1,10 +1,10 @@
 import { and, eq, gte, lt } from "drizzle-orm";
-import { Banknote, DollarSign, Receipt, Repeat, Scissors, ShoppingBag } from "lucide-react";
+import { DollarSign, Receipt, Repeat, Scissors, ShoppingBag } from "lucide-react";
 import { db } from "@/db";
-import { agendamentos, assinaturas, planos, produtos, vendasProdutos } from "@/db/schema";
+import { agendamentos, assinaturas, barbeiros, planos, produtos, vendasProdutos } from "@/db/schema";
 import { formatBRL } from "@/lib/format";
-import { gerarDias, spYmd } from "./datas";
-import { GraficoBarras, KpiGrid, Ranking, Secao } from "./ui";
+import { diaCurto, gerarDias, spYmd } from "./datas";
+import { GraficoBarras, KpiGrid, Ranking, Secao, Tabela } from "./ui";
 
 export async function PainelFinanceiro({
   inicio,
@@ -15,8 +15,16 @@ export async function PainelFinanceiro({
 }) {
   const [finalizados, vendas, ativas] = await Promise.all([
     db
-      .select({ dataHora: agendamentos.dataHora, valor: agendamentos.valor, tipo: agendamentos.tipo })
+      .select({
+        dataHora: agendamentos.dataHora,
+        valor: agendamentos.valor,
+        tipo: agendamentos.tipo,
+        barbeiroId: agendamentos.barbeiroId,
+        barbeiroNome: barbeiros.nome,
+        barbeiroFoto: barbeiros.fotoUrl,
+      })
       .from(agendamentos)
+      .innerJoin(barbeiros, eq(agendamentos.barbeiroId, barbeiros.id))
       .where(
         and(
           eq(agendamentos.status, "finalizado"),
@@ -43,10 +51,20 @@ export async function PainelFinanceiro({
   const ticket = pagantes > 0 ? fatServicos / pagantes : 0;
 
   const dias = gerarDias(inicio, fimExclusivo);
-  const porDia = new Map<string, number>(dias.map((d) => [d, 0]));
-  for (const r of finalizados) porDia.set(spYmd(r.dataHora), (porDia.get(spYmd(r.dataHora)) ?? 0) + Number(r.valor));
-  for (const v of vendas) porDia.set(spYmd(v.dataHora), (porDia.get(spYmd(v.dataHora)) ?? 0) + Number(v.total));
-  const serie = dias.map((dia) => ({ dia, valor: porDia.get(dia) ?? 0 }));
+  const serv = new Map<string, number>(dias.map((d) => [d, 0]));
+  const prod = new Map<string, number>(dias.map((d) => [d, 0]));
+  for (const r of finalizados) serv.set(spYmd(r.dataHora), (serv.get(spYmd(r.dataHora)) ?? 0) + Number(r.valor));
+  for (const v of vendas) prod.set(spYmd(v.dataHora), (prod.get(spYmd(v.dataHora)) ?? 0) + Number(v.total));
+  const serie = dias.map((dia) => ({ dia, valor: (serv.get(dia) ?? 0) + (prod.get(dia) ?? 0) }));
+
+  const porBarbeiro = new Map<string, { nome: string; foto: string | null; fat: number }>();
+  for (const r of finalizados) {
+    const b = porBarbeiro.get(r.barbeiroId) ?? { nome: r.barbeiroNome, foto: r.barbeiroFoto, fat: 0 };
+    b.fat += Number(r.valor);
+    porBarbeiro.set(r.barbeiroId, b);
+  }
+  const barbeirosRank = [...porBarbeiro.values()].sort((a, b) => b.fat - a.fat);
+  const maxBarbeiro = Math.max(1, ...barbeirosRank.map((v) => v.fat));
 
   const maxComposicao = Math.max(1, fatServicos, fatProdutos, recorrente);
 
@@ -66,23 +84,48 @@ export async function PainelFinanceiro({
         <GraficoBarras dados={serie} formato="moeda" />
       </Secao>
 
-      <Secao titulo="Composição do faturamento">
-        <Ranking
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Secao titulo="Composição do faturamento">
+          <Ranking
+            vazio="Sem faturamento no período."
+            itens={[
+              { nome: "Serviços", destaque: formatBRL(fatServicos), proporcao: (fatServicos / maxComposicao) * 100 },
+              { nome: "Produtos", destaque: formatBRL(fatProdutos), proporcao: (fatProdutos / maxComposicao) * 100 },
+              {
+                nome: "Assinaturas (recorrente)",
+                destaque: formatBRL(recorrente),
+                proporcao: (recorrente / maxComposicao) * 100,
+              },
+            ]}
+          />
+        </Secao>
+
+        <Secao titulo="Faturamento por profissional">
+          <Ranking
+            vazio="Nenhum atendimento no período."
+            itens={barbeirosRank.map((b) => ({
+              nome: b.nome,
+              avatarUrl: b.foto,
+              destaque: formatBRL(b.fat),
+              proporcao: (b.fat / maxBarbeiro) * 100,
+            }))}
+          />
+        </Secao>
+      </div>
+
+      <Secao titulo="Faturamento por dia (detalhado)">
+        <Tabela
+          cabecalho={["Data", "Serviços", "Produtos", "Total"]}
+          linhas={dias
+            .filter((dia) => (serv.get(dia) ?? 0) + (prod.get(dia) ?? 0) > 0)
+            .map((dia) => [
+              diaCurto(dia),
+              formatBRL(serv.get(dia) ?? 0),
+              formatBRL(prod.get(dia) ?? 0),
+              formatBRL((serv.get(dia) ?? 0) + (prod.get(dia) ?? 0)),
+            ])}
           vazio="Sem faturamento no período."
-          itens={[
-            { nome: "Serviços", destaque: formatBRL(fatServicos), proporcao: (fatServicos / maxComposicao) * 100 },
-            { nome: "Produtos", destaque: formatBRL(fatProdutos), proporcao: (fatProdutos / maxComposicao) * 100 },
-            {
-              nome: "Assinaturas (recorrente)",
-              destaque: formatBRL(recorrente),
-              proporcao: (recorrente / maxComposicao) * 100,
-            },
-          ]}
         />
-        <p className="mt-3 flex items-center gap-1.5 text-xs text-muted2">
-          <Banknote className="h-3.5 w-3.5" />
-          Serviços e produtos são do período; a receita recorrente reflete as assinaturas ativas hoje.
-        </p>
       </Secao>
     </div>
   );

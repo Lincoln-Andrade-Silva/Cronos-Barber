@@ -1,10 +1,12 @@
-import { and, eq, gte, lt } from "drizzle-orm";
+import { and, desc, eq, gte, lt } from "drizzle-orm";
 import { Boxes, Receipt, ShoppingBag, ShoppingCart } from "lucide-react";
 import { db } from "@/db";
-import { barbeiros, produtos, vendasProdutos } from "@/db/schema";
+import { barbeiros, produtos, profiles, vendasProdutos } from "@/db/schema";
 import { formatBRL } from "@/lib/format";
-import { gerarDias, spYmd } from "./datas";
-import { GraficoBarras, KpiGrid, Ranking, Secao } from "./ui";
+import { diaCurto, gerarDias, spYmd } from "./datas";
+import { GraficoBarras, KpiGrid, Ranking, Secao, Tabela } from "./ui";
+
+const LIMITE_DETALHE = 100;
 
 export async function PainelProdutos({
   inicio,
@@ -17,14 +19,19 @@ export async function PainelProdutos({
     .select({
       dataHora: vendasProdutos.dataHora,
       produtoNome: produtos.nome,
+      barbeiroId: vendasProdutos.barbeiroId,
       barbeiroNome: barbeiros.nome,
+      barbeiroFoto: barbeiros.fotoUrl,
+      clienteNome: profiles.nome,
       quantidade: vendasProdutos.quantidade,
       total: vendasProdutos.total,
     })
     .from(vendasProdutos)
     .innerJoin(produtos, eq(vendasProdutos.produtoId, produtos.id))
     .innerJoin(barbeiros, eq(vendasProdutos.barbeiroId, barbeiros.id))
-    .where(and(gte(vendasProdutos.dataHora, inicio), lt(vendasProdutos.dataHora, fimExclusivo)));
+    .leftJoin(profiles, eq(vendasProdutos.clienteId, profiles.id))
+    .where(and(gte(vendasProdutos.dataHora, inicio), lt(vendasProdutos.dataHora, fimExclusivo)))
+    .orderBy(desc(vendasProdutos.dataHora));
 
   const faturamento = vendas.reduce((s, v) => s + Number(v.total), 0);
   const itens = vendas.reduce((s, v) => s + v.quantidade, 0);
@@ -45,10 +52,16 @@ export async function PainelProdutos({
   const produtosRank = [...porProduto.entries()].sort((a, b) => b[1].qtd - a[1].qtd);
   const maxProduto = Math.max(1, ...produtosRank.map(([, v]) => v.qtd));
 
-  const porBarbeiro = new Map<string, number>();
-  for (const v of vendas) porBarbeiro.set(v.barbeiroNome, (porBarbeiro.get(v.barbeiroNome) ?? 0) + Number(v.total));
-  const barbeirosRank = [...porBarbeiro.entries()].sort((a, b) => b[1] - a[1]);
-  const maxBarbeiro = Math.max(1, ...barbeirosRank.map(([, v]) => v));
+  const porBarbeiro = new Map<string, { nome: string; foto: string | null; total: number }>();
+  for (const v of vendas) {
+    const b = porBarbeiro.get(v.barbeiroId) ?? { nome: v.barbeiroNome, foto: v.barbeiroFoto, total: 0 };
+    b.total += Number(v.total);
+    porBarbeiro.set(v.barbeiroId, b);
+  }
+  const barbeirosRank = [...porBarbeiro.values()].sort((a, b) => b.total - a.total);
+  const maxBarbeiro = Math.max(1, ...barbeirosRank.map((v) => v.total));
+
+  const detalhe = vendas.slice(0, LIMITE_DETALHE);
 
   return (
     <div className="space-y-6">
@@ -81,14 +94,31 @@ export async function PainelProdutos({
         <Secao titulo="Vendas por profissional">
           <Ranking
             vazio="Nenhuma venda no período."
-            itens={barbeirosRank.map(([nome, total]) => ({
-              nome,
-              destaque: formatBRL(total),
-              proporcao: (total / maxBarbeiro) * 100,
+            itens={barbeirosRank.map((b) => ({
+              nome: b.nome,
+              avatarUrl: b.foto,
+              destaque: formatBRL(b.total),
+              proporcao: (b.total / maxBarbeiro) * 100,
             }))}
           />
         </Secao>
       </div>
+
+      <Secao titulo={`Vendas${vendas.length > LIMITE_DETALHE ? ` (${LIMITE_DETALHE} mais recentes)` : ""}`}>
+        <Tabela
+          cabecalho={["Profissional", "Produto", "Qtd", "Cliente", "Data", "Total"]}
+          avatars={detalhe.map((v) => v.barbeiroFoto)}
+          linhas={detalhe.map((v) => [
+            v.barbeiroNome,
+            v.produtoNome,
+            `${v.quantidade}x`,
+            v.clienteNome ?? "-",
+            diaCurto(spYmd(v.dataHora)),
+            formatBRL(v.total),
+          ])}
+          vazio="Nenhuma venda no período."
+        />
+      </Secao>
     </div>
   );
 }

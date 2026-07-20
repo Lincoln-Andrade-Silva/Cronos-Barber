@@ -119,11 +119,30 @@ export function GraficoBarras({
   );
 }
 
+export function Avatar({ url, nome }: { url?: string | null; nome: string }) {
+  if (url) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={url}
+        alt={nome}
+        className="h-6 w-6 shrink-0 rounded-full border border-line object-cover"
+      />
+    );
+  }
+  return (
+    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-white">
+      {nome.charAt(0).toUpperCase()}
+    </span>
+  );
+}
+
 export interface ItemRanking {
   nome: string;
   destaque: string;
   sub?: string;
   proporcao: number;
+  avatarUrl?: string | null;
 }
 
 export function Ranking({ itens, vazio }: { itens: ItemRanking[]; vazio: string }) {
@@ -143,6 +162,7 @@ export function Ranking({ itens, vazio }: { itens: ItemRanking[]; vazio: string 
               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-surface text-[11px] font-bold text-muted2">
                 {idx + 1}
               </span>
+              {"avatarUrl" in item && <Avatar url={item.avatarUrl} nome={item.nome} />}
               <span className="truncate text-sm font-medium">{item.nome}</span>
             </div>
             <div className="shrink-0 text-right">
@@ -160,10 +180,12 @@ export function Tabela({
   cabecalho,
   linhas,
   vazio,
+  avatars,
 }: {
   cabecalho: string[];
   linhas: string[][];
   vazio: string;
+  avatars?: (string | null)[];
 }) {
   if (linhas.length === 0) {
     return <p className="py-6 text-center text-sm text-muted">{vazio}</p>;
@@ -183,11 +205,24 @@ export function Tabela({
         <tbody className="divide-y divide-line/60">
           {linhas.map((linha, idx) => (
             <tr key={idx} className="transition hover:bg-surface/40">
-              {linha.map((celula, i) => (
-                <td key={i} className={i === 0 ? "py-2.5 font-medium" : "py-2.5 text-right tabular-nums text-muted"}>
-                  {celula}
-                </td>
-              ))}
+              {linha.map((celula, i) =>
+                i === 0 ? (
+                  <td key={i} className="py-2.5 font-medium">
+                    {avatars ? (
+                      <div className="flex items-center gap-2">
+                        <Avatar url={avatars[idx]} nome={celula} />
+                        <span>{celula}</span>
+                      </div>
+                    ) : (
+                      celula
+                    )}
+                  </td>
+                ) : (
+                  <td key={i} className="py-2.5 text-right tabular-nums text-muted">
+                    {celula}
+                  </td>
+                ),
+              )}
             </tr>
           ))}
         </tbody>
