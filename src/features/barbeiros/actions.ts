@@ -70,18 +70,18 @@ export async function salvarBarbeiro(
     return { error: "Não foi possível salvar. Tente novamente." };
   }
 
-  revalidatePath("/admin/cadastros");
+  revalidatePath("/admin/barbeiros");
   return { ok: true };
 }
 
 export async function alternarAtivoBarbeiro(id: string, ativo: boolean): Promise<void> {
   await requireAdmin();
   await db.update(barbeiros).set({ ativo }).where(eq(barbeiros.id, id));
-  revalidatePath("/admin/cadastros");
+  revalidatePath("/admin/barbeiros");
 }
 
 export async function excluirBarbeiro(id: string): Promise<void> {
   await requireAdmin();
   await db.delete(barbeiros).where(eq(barbeiros.id, id));
-  revalidatePath("/admin/cadastros");
+  revalidatePath("/admin/barbeiros");
 }

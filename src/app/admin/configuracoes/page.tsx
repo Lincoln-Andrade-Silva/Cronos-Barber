@@ -1,6 +1,6 @@
-import { PageHeader } from "@/components/ui";
+import { Card, PageHeader } from "@/components/ui";
 import { getBarbeariaInfo } from "@/lib/barbearia";
-import { ConfiguracoesTabs } from "@/features/configuracoes/configuracoes-tabs";
+import { BarbeariaForm } from "@/features/barbearia/barbearia-form";
 
 export const dynamic = "force-dynamic";
 
@@ -11,9 +11,11 @@ export default async function ConfiguracoesPage() {
     <div>
       <PageHeader
         title="Configurações"
-        description="Ajustes gerais do sistema e da identidade da barbearia."
+        description="Identidade e informações da barbearia."
       />
-      <ConfiguracoesTabs info={info} />
+      <Card>
+        <BarbeariaForm info={info} />
+      </Card>
     </div>
   );
 }
