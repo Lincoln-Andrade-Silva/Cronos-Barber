@@ -6,6 +6,7 @@ import {
   Gauge,
   Settings,
   ShoppingCart,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -28,6 +29,7 @@ export const ADMIN_NAV: AdminNavSection[] = [
     items: [
       { label: "Dashboard", href: "/admin", icon: Gauge, ready: true },
       { label: "Agenda", href: "/admin/agenda", icon: CalendarDays, ready: true },
+      { label: "Barbeiros", href: "/admin/barbeiros", icon: Users, ready: true },
       { label: "Cadastros", href: "/admin/cadastros", icon: Boxes, ready: true },
       { label: "Vendas", href: "/admin/vendas", icon: ShoppingCart, ready: true },
       { label: "Assinaturas", href: "/admin/assinaturas", icon: CreditCard, ready: true },

@@ -1,18 +1,19 @@
-import { and, asc, count, eq, ilike, type SQL } from "drizzle-orm";
+import { and, asc, count, eq, ilike, inArray, type SQL } from "drizzle-orm";
 import { db } from "@/db";
-import { barbeiros, produtos, servicos } from "@/db/schema";
+import { planoServicos, planos, produtos, servicos } from "@/db/schema";
 import { PageHeader, UrlTabBar, type TabItem } from "@/components/ui";
 import { PAGE_SIZE, offsetDaPagina, parsePagina, totalPaginas } from "@/lib/pagination";
-import { BarbeirosClient } from "@/features/barbeiros/barbeiros-client";
 import { ServicosClient } from "@/features/servicos/servicos-client";
 import { ProdutosClient } from "@/features/produtos/produtos-client";
+import { PlanosClient } from "@/features/planos/planos-client";
 
 export const dynamic = "force-dynamic";
 
 const TABS = [
-  { key: "barbeiros", label: "Barbeiros", ready: true },
   { key: "servicos", label: "Serviços", ready: true },
   { key: "produtos", label: "Produtos", ready: true },
+  { key: "planos", label: "Planos", ready: true },
+  { key: "usuarios", label: "Usuários", ready: false },
 ] as const satisfies readonly TabItem[];
 
 export default async function CadastrosPage({
@@ -20,7 +21,7 @@ export default async function CadastrosPage({
 }: {
   searchParams: { tab?: string; page?: string; q?: string; status?: string };
 }) {
-  const tab = searchParams.tab ?? "barbeiros";
+  const tab = searchParams.tab ?? "servicos";
   const pagina = parsePagina(searchParams.page);
   const q = searchParams.q?.trim() ?? "";
   const status = searchParams.status ?? "todos";
@@ -28,21 +29,7 @@ export default async function CadastrosPage({
 
   let conteudo: React.ReactNode = null;
 
-  if (tab === "servicos") {
-    const cond: SQL[] = [];
-    if (q) cond.push(ilike(servicos.nome, `%${q}%`));
-    if (status === "ativos") cond.push(eq(servicos.ativo, true));
-    if (status === "inativos") cond.push(eq(servicos.ativo, false));
-    const where = cond.length ? and(...cond) : undefined;
-
-    const [total, rows] = await Promise.all([
-      db.select({ n: count() }).from(servicos).where(where),
-      db.select().from(servicos).where(where).orderBy(asc(servicos.nome)).limit(PAGE_SIZE).offset(offset),
-    ]);
-    conteudo = (
-      <ServicosClient servicos={rows} page={pagina} pageCount={totalPaginas(total[0]?.n ?? 0)} />
-    );
-  } else if (tab === "produtos") {
+  if (tab === "produtos") {
     const cond: SQL[] = [];
     if (q) cond.push(ilike(produtos.nome, `%${q}%`));
     if (status === "ativos") cond.push(eq(produtos.status, "ativo"));
@@ -56,29 +43,64 @@ export default async function CadastrosPage({
     conteudo = (
       <ProdutosClient produtos={rows} page={pagina} pageCount={totalPaginas(total[0]?.n ?? 0)} />
     );
+  } else if (tab === "planos") {
+    const cond: SQL[] = [];
+    if (q) cond.push(ilike(planos.nome, `%${q}%`));
+    if (status === "ativos") cond.push(eq(planos.ativo, true));
+    if (status === "inativos") cond.push(eq(planos.ativo, false));
+    const where = cond.length ? and(...cond) : undefined;
+
+    const [total, listaPlanos, listaServicos] = await Promise.all([
+      db.select({ n: count() }).from(planos).where(where),
+      db.select().from(planos).where(where).orderBy(asc(planos.nome)).limit(PAGE_SIZE).offset(offset),
+      db.select().from(servicos).where(eq(servicos.ativo, true)).orderBy(asc(servicos.nome)),
+    ]);
+
+    const ids = listaPlanos.map((p) => p.id);
+    const vinculos = ids.length
+      ? await db.select().from(planoServicos).where(inArray(planoServicos.planoId, ids))
+      : [];
+
+    const planosCompletos = listaPlanos.map((p) => ({
+      id: p.id,
+      nome: p.nome,
+      valor: p.valor,
+      diasValidade: p.diasValidade,
+      diasValidos: p.diasValidos,
+      ativo: p.ativo,
+      servicos: vinculos
+        .filter((v) => v.planoId === p.id)
+        .map((v) => ({ servicoId: v.servicoId, limite: v.limite })),
+    }));
+
+    conteudo = (
+      <PlanosClient
+        planos={planosCompletos}
+        servicos={listaServicos}
+        page={pagina}
+        pageCount={totalPaginas(total[0]?.n ?? 0)}
+      />
+    );
   } else {
     const cond: SQL[] = [];
-    if (q) cond.push(ilike(barbeiros.nome, `%${q}%`));
-    if (status === "ativos") cond.push(eq(barbeiros.ativo, true));
-    if (status === "inativos") cond.push(eq(barbeiros.ativo, false));
+    if (q) cond.push(ilike(servicos.nome, `%${q}%`));
+    if (status === "ativos") cond.push(eq(servicos.ativo, true));
+    if (status === "inativos") cond.push(eq(servicos.ativo, false));
     const where = cond.length ? and(...cond) : undefined;
 
     const [total, rows] = await Promise.all([
-      db.select({ n: count() }).from(barbeiros).where(where),
-      db.select().from(barbeiros).where(where).orderBy(asc(barbeiros.nome)).limit(PAGE_SIZE).offset(offset),
+      db.select({ n: count() }).from(servicos).where(where),
+      db.select().from(servicos).where(where).orderBy(asc(servicos.nome)).limit(PAGE_SIZE).offset(offset),
     ]);
     conteudo = (
-      <BarbeirosClient barbeiros={rows} page={pagina} pageCount={totalPaginas(total[0]?.n ?? 0)} />
+      <ServicosClient servicos={rows} page={pagina} pageCount={totalPaginas(total[0]?.n ?? 0)} />
     );
   }
 
   return (
     <div>
-      <PageHeader
-        title="Cadastros"
-        description="Barbeiros, serviços e produtos da barbearia."
-      />
-      <UrlTabBar tabs={TABS} defaultTab="barbeiros" />
+      <PageHeader title="Cadastros" description="Serviços, produtos e planos da barbearia." />
+      <UrlTabBar tabs={TABS} defaultTab="servicos" />
       {conteudo}
     </div>
   );

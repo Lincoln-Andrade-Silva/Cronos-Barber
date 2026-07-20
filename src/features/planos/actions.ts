@@ -78,7 +78,7 @@ export async function salvarPlano(
     return { error: "Não foi possível salvar. Tente novamente." };
   }
 
-  revalidatePath("/admin/assinaturas");
+  revalidatePath("/admin/cadastros");
   return { ok: true };
 }
 
@@ -90,6 +90,6 @@ export async function excluirPlano(id: string): Promise<{ ok?: boolean; error?: 
     console.error("Falha ao excluir plano:", err);
     return { error: "Não é possível excluir um plano com assinaturas vinculadas." };
   }
-  revalidatePath("/admin/assinaturas");
+  revalidatePath("/admin/cadastros");
   return { ok: true };
 }
