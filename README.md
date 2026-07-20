@@ -84,7 +84,7 @@ A marca exibida (login, sidebar, home) vem de `getBarbeariaNome()` (`src/lib/bar
 - [ ] **Fase 9**: Dashboard (cards + gráficos)
 - [ ] **Fase 10**: Relatórios
 - [ ] **Fase 11**: Gestão (atendimentos, produtos, vendas)
-- [ ] **Fase 12**: Configurações — [x] Expediente por barbeiro · [ ] Usuários
+- [ ] **Fase 12**: Configurações — [x] Expediente por barbeiro · [x] Usuários (CRUD em Cadastros)
 - [ ] **Fase 13**: Deploy (Vercel + Supabase + domínio)
 - [ ] **Fase 14**: Checklist de reuso do template
 
