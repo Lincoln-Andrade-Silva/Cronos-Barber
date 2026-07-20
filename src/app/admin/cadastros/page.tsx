@@ -1,11 +1,13 @@
-import { and, asc, count, eq, ilike, inArray, type SQL } from "drizzle-orm";
+import { and, asc, count, eq, ilike, inArray, or, type SQL } from "drizzle-orm";
 import { db } from "@/db";
-import { planoServicos, planos, produtos, servicos } from "@/db/schema";
+import { planoServicos, planos, produtos, profiles, servicos } from "@/db/schema";
 import { PageHeader, UrlTabBar, type TabItem } from "@/components/ui";
+import { getCurrentProfile } from "@/lib/auth";
 import { PAGE_SIZE, offsetDaPagina, parsePagina, totalPaginas } from "@/lib/pagination";
 import { ServicosClient } from "@/features/servicos/servicos-client";
 import { ProdutosClient } from "@/features/produtos/produtos-client";
 import { PlanosClient } from "@/features/planos/planos-client";
+import { UsuariosClient } from "@/features/usuarios/usuarios-client";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +15,7 @@ const TABS = [
   { key: "servicos", label: "Serviços", ready: true },
   { key: "produtos", label: "Produtos", ready: true },
   { key: "planos", label: "Planos", ready: true },
-  { key: "usuarios", label: "Usuários", ready: false },
+  { key: "usuarios", label: "Usuários", ready: true },
 ] as const satisfies readonly TabItem[];
 
 export default async function CadastrosPage({
@@ -77,6 +79,39 @@ export default async function CadastrosPage({
       <PlanosClient
         planos={planosCompletos}
         servicos={listaServicos}
+        page={pagina}
+        pageCount={totalPaginas(total[0]?.n ?? 0)}
+      />
+    );
+  } else if (tab === "usuarios") {
+    const cond: SQL[] = [];
+    if (q) cond.push(or(ilike(profiles.nome, `%${q}%`), ilike(profiles.email, `%${q}%`)) as SQL);
+    if (status === "ativos") cond.push(eq(profiles.status, "ativo"));
+    if (status === "inativos") cond.push(eq(profiles.status, "inativo"));
+    const where = cond.length ? and(...cond) : undefined;
+
+    const [total, rows, atual] = await Promise.all([
+      db.select({ n: count() }).from(profiles).where(where),
+      db
+        .select({
+          id: profiles.id,
+          nome: profiles.nome,
+          email: profiles.email,
+          telefone: profiles.telefone,
+          tipo: profiles.tipo,
+          status: profiles.status,
+        })
+        .from(profiles)
+        .where(where)
+        .orderBy(asc(profiles.nome))
+        .limit(PAGE_SIZE)
+        .offset(offset),
+      getCurrentProfile(),
+    ]);
+    conteudo = (
+      <UsuariosClient
+        usuarios={rows}
+        usuarioAtualId={atual.id}
         page={pagina}
         pageCount={totalPaginas(total[0]?.n ?? 0)}
       />

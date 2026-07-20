@@ -18,6 +18,7 @@ export async function getCurrentProfile(): Promise<Profile> {
 
   const [profile] = await db.select().from(profiles).where(eq(profiles.id, user.id));
   if (!profile) redirect("/login");
+  if (profile.status !== "ativo") redirect("/login?erro=inativo");
 
   return profile;
 }
