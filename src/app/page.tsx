@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CalendarPlus, Clock, History, MapPin } from "lucide-react";
 import { Card } from "@/components/ui";
@@ -81,13 +82,14 @@ export default async function ClientHome() {
 
       {/* Atalhos */}
       <div className="mb-6 grid grid-cols-2 gap-3">
-        <div className="flex flex-col items-start gap-2 rounded-xl border border-line bg-panel p-4 opacity-70">
+        <Link
+          href="/agendar"
+          className="flex flex-col items-start gap-2 rounded-xl border border-line bg-panel p-4 transition hover:border-brand/40 hover:bg-surface"
+        >
           <CalendarPlus className="h-5 w-5 text-brand-light" />
           <p className="text-sm font-semibold">Agendar horário</p>
-          <span className="text-[10px] font-medium uppercase tracking-wider text-muted2">
-            em breve
-          </span>
-        </div>
+          <span className="text-xs text-muted">Escolha serviço, profissional e horário</span>
+        </Link>
         <div className="flex flex-col items-start gap-2 rounded-xl border border-line bg-panel p-4 opacity-70">
           <History className="h-5 w-5 text-brand-light" />
           <p className="text-sm font-semibold">Meus agendamentos</p>
