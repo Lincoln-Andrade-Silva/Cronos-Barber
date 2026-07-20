@@ -93,7 +93,7 @@ export function Select({ value, onChange, options, className, withAvatar }: Sele
       </button>
 
       {open && (
-        <div className="absolute right-0 z-20 mt-2 min-w-full overflow-hidden rounded-lg border border-line bg-panel p-1 shadow-2xl">
+        <div className="absolute right-0 z-20 mt-2 w-full overflow-hidden rounded-lg border border-line bg-panel p-1 shadow-2xl">
           <div className="relative mb-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted2" />
             <input
@@ -116,7 +116,7 @@ export function Select({ value, onChange, options, className, withAvatar }: Sele
                     setOpen(false);
                   }}
                   className={cn(
-                    "flex w-full items-center justify-between gap-3 whitespace-nowrap rounded-md px-3 py-2 text-left text-sm transition",
+                    "flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm transition",
                     active ? "bg-brand/10 font-medium text-brand-light" : "text-ink hover:bg-surface",
                   )}
                 >
