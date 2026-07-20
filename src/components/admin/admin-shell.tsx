@@ -8,11 +8,23 @@ import { ADMIN_NAV } from "@/lib/admin-nav";
 import { LogoutButton } from "@/features/auth/logout-button";
 import { cn } from "@/lib/cn";
 
-function Brand({ nomeBarbearia }: { nomeBarbearia: string }) {
+function Brand({ nomeBarbearia, logoUrl }: { nomeBarbearia: string; logoUrl: string | null }) {
   return (
-    <div className="border-b border-line px-5 pb-[18px] pt-6">
-      <p className="text-xl font-extrabold tracking-tight text-white">{nomeBarbearia}</p>
-      <p className="mt-1 text-xs text-muted">Painel Admin</p>
+    <div className="flex items-center gap-3 border-b border-line px-5 pb-[18px] pt-6">
+      {logoUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={logoUrl}
+          alt={nomeBarbearia}
+          className="h-10 w-10 shrink-0 rounded-full border border-line object-cover"
+        />
+      )}
+      <div className="min-w-0">
+        <p className="truncate text-lg font-extrabold tracking-tight text-white">
+          {nomeBarbearia}
+        </p>
+        <p className="text-xs text-muted">Painel Admin</p>
+      </div>
     </div>
   );
 }
@@ -21,48 +33,54 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
-    <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-      <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-muted2">
-        Menu
-      </p>
-      {ADMIN_NAV.map((item) => {
-        const Icon = item.icon;
-        const active =
-          item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
+    <nav className="flex-1 space-y-5 px-3 py-4">
+      {ADMIN_NAV.map((section) => (
+        <div key={section.label} className="space-y-1">
+          <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted2">
+            {section.label}
+          </p>
+          {section.items.map((item) => {
+            const Icon = item.icon;
+            const active =
+              item.href === "/admin"
+                ? pathname === "/admin"
+                : pathname.startsWith(item.href);
 
-        if (!item.ready) {
-          return (
-            <div
-              key={item.label}
-              title="Em breve"
-              className="flex cursor-not-allowed items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-[13px] text-muted2"
-            >
-              <Icon className="h-4 w-4" strokeWidth={1.8} />
-              <span>{item.label}</span>
-              <span className="ml-auto text-[10px] font-medium uppercase tracking-wider text-muted2">
-                em breve
-              </span>
-            </div>
-          );
-        }
+            if (!item.ready) {
+              return (
+                <div
+                  key={item.label}
+                  title="Em breve"
+                  className="flex cursor-not-allowed items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-[13px] text-muted2"
+                >
+                  <Icon className="h-4 w-4" strokeWidth={1.8} />
+                  <span>{item.label}</span>
+                  <span className="ml-auto text-[10px] font-medium uppercase tracking-wider text-muted2">
+                    em breve
+                  </span>
+                </div>
+              );
+            }
 
-        return (
-          <Link
-            key={item.label}
-            href={item.href}
-            onClick={onNavigate}
-            className={cn(
-              "flex items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-[13px] transition",
-              active
-                ? "bg-brand/[0.12] font-semibold text-brand-light"
-                : "font-medium text-muted hover:bg-surface hover:text-ink",
-            )}
-          >
-            <Icon className="h-4 w-4" strokeWidth={1.8} />
-            <span>{item.label}</span>
-          </Link>
-        );
-      })}
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                onClick={onNavigate}
+                className={cn(
+                  "flex items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-[13px] transition",
+                  active
+                    ? "bg-brand/[0.12] font-semibold text-brand-light"
+                    : "font-medium text-muted hover:bg-surface hover:text-ink",
+                )}
+              >
+                <Icon className="h-4 w-4" strokeWidth={1.8} />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      ))}
     </nav>
   );
 }
@@ -89,10 +107,12 @@ function UserFooter({ nome }: { nome: string }) {
 export function AdminShell({
   nome,
   nomeBarbearia,
+  logoUrl,
   children,
 }: {
   nome: string;
   nomeBarbearia: string;
+  logoUrl: string | null;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -101,7 +121,7 @@ export function AdminShell({
     <div className="min-h-screen lg:pl-64">
       {/* Sidebar fixa (desktop) */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-line bg-panel lg:flex">
-        <Brand nomeBarbearia={nomeBarbearia} />
+        <Brand nomeBarbearia={nomeBarbearia} logoUrl={logoUrl} />
         <NavList />
         <UserFooter nome={nome} />
       </aside>
@@ -116,7 +136,17 @@ export function AdminShell({
         >
           <Menu className="h-5 w-5" />
         </button>
-        <span className="text-sm font-semibold text-white">{nomeBarbearia}</span>
+        <div className="flex items-center gap-2">
+          {logoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logoUrl}
+              alt={nomeBarbearia}
+              className="h-7 w-7 rounded-full border border-line object-cover"
+            />
+          )}
+          <span className="text-sm font-semibold text-white">{nomeBarbearia}</span>
+        </div>
       </header>
 
       {/* Drawer (mobile) */}
@@ -129,7 +159,7 @@ export function AdminShell({
           />
           <aside className="absolute inset-y-0 left-0 flex w-72 max-w-[85%] flex-col bg-panel shadow-2xl">
             <div className="flex items-center justify-between border-b border-line pr-2">
-              <Brand nomeBarbearia={nomeBarbearia} />
+              <Brand nomeBarbearia={nomeBarbearia} logoUrl={logoUrl} />
               <button
                 type="button"
                 onClick={() => setOpen(false)}

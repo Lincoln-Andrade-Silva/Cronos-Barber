@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button, Field, FormError, Input } from "@/components/ui";
+import { maskTelefone } from "@/lib/mask";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export function RegisterForm() {
@@ -72,7 +73,7 @@ export function RegisterForm() {
           autoComplete="tel"
           placeholder="(00) 00000-0000"
           value={telefone}
-          onChange={(e) => setTelefone(e.target.value)}
+          onChange={(e) => setTelefone(maskTelefone(e.target.value))}
         />
       </Field>
 

@@ -47,6 +47,7 @@ Ver `.env.example`. Resumo:
 | `npm run db:generate` | Gera migrations a partir do schema Drizzle |
 | `npm run db:migrate` | Aplica migrations |
 | `npm run seed:admin` | Cria o admin padrão |
+| `npm run setup:storage` | Cria o bucket público de imagens no Supabase Storage |
 | `npm run db:studio` | Drizzle Studio |
 
 ## Autenticação
@@ -60,11 +61,12 @@ Ver `.env.example`. Resumo:
 
 Componentes reutilizáveis em `src/components/ui` (fonte única de estilo):
 
-- `Button` (variantes: primary, secondary, ghost, danger)
-- `Input`, `Field`, `Label`, `FormError`, `FormSuccess`
-- `Card`, `PageHeader`
+- `Button` (variantes: primary, secondary, ghost, danger), `Input`, `Textarea`, `Field`, `Label`, `FormError`, `FormSuccess`
+- `Card`, `PageHeader`, `Badge`, `Toggle`, `Segmented`, `Select` (dropdown custom)
+- `Modal`, `ConfirmModal`, `ImageUpload`, `TabBar`
+- `DataTable` (TanStack): busca + slots `filter`/`actions` + paginação, base de toda listagem (ver `src/features/barbeiros`)
 
-O menu lateral do admin fica em `src/components/admin/admin-shell.tsx` (responsivo, drawer no mobile). Tokens de cor semânticos (`bg`, `panel`, `surface`, `line`, `ink`, `muted`, `brand`) em `tailwind.config.ts`.
+O menu lateral do admin fica em `src/components/admin/admin-shell.tsx` (responsivo, drawer no mobile), dividido por seções (`src/lib/admin-nav.ts`). Tokens de cor semânticos (`bg`, `panel`, `surface`, `line`, `ink`, `muted`, `brand`) em `tailwind.config.ts`.
 
 A marca exibida (login, sidebar, home) vem de `getBarbeariaNome()` (`src/lib/barbearia.ts`), lida da tabela `barbearia_info`, com fallback `Cronos Barber`. Editável em Configurações > Barbearia (Fase 2).
 
@@ -72,7 +74,7 @@ A marca exibida (login, sidebar, home) vem de `getBarbeariaNome()` (`src/lib/bar
 
 - [x] **Fase 0**: Setup (Next.js, Tailwind, Drizzle, Supabase conectado)
 - [x] **Fase 1**: Auth (registro/login, `profiles` com tipo/status, proteção de rotas, seed admin, design system base)
-- [ ] **Fase 2**: Cadastros base (Barbeiros, Serviços, Produtos, Config. Barbearia, Home do cliente)
+- [x] **Fase 2**: Cadastros base (Barbeiros, Serviços, Produtos em `/admin/cadastros`; Config. Barbearia com logo/horário/endereço; Home do cliente)
 - [ ] **Fase 3**: Agendamento (fluxo do cliente + conflito de horário + expediente)
 - [ ] **Fase 4**: Histórico do cliente
 - [ ] **Fase 5**: Financeiro básico (faturamento do dia)

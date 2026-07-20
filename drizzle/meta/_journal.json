@@ -29,6 +29,48 @@
       "when": 1784487043227,
       "tag": "0003_barbearia_rls_seed",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784488451065,
+      "tag": "0004_fast_overlord",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1784488468980,
+      "tag": "0005_abandoned_spitfire",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1784509246458,
+      "tag": "0006_omniscient_expediter",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1784509257795,
+      "tag": "0007_barbeiros_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1784509769442,
+      "tag": "0008_flimsy_agent_zero",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1784509810867,
+      "tag": "0009_servicos_produtos_rls",
+      "breakpoints": true
     }
   ]
 }

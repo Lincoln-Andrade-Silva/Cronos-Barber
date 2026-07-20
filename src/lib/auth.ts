@@ -21,3 +21,10 @@ export async function getCurrentProfile(): Promise<Profile> {
 
   return profile;
 }
+
+/** Exige um usuário admin. Redireciona clientes para a home. Use em rotas/ações admin. */
+export async function requireAdmin(): Promise<Profile> {
+  const profile = await getCurrentProfile();
+  if (profile.tipo !== "admin") redirect("/");
+  return profile;
+}

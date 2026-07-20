@@ -1,5 +1,15 @@
 export { Button, type ButtonProps } from "./button";
 export { Input } from "./input";
+export { Textarea } from "./textarea";
 export { Field, Label, FormError, FormSuccess } from "./field";
 export { Card } from "./card";
 export { PageHeader } from "./page-header";
+export { Badge } from "./badge";
+export { Segmented } from "./segmented";
+export { Select } from "./select";
+export { ImageUpload } from "./image-upload";
+export { Toggle } from "./toggle";
+export { Modal } from "./modal";
+export { ConfirmModal } from "./confirm-modal";
+export { DataTable } from "./data-table";
+export { TabBar, type TabItem } from "./tab-bar";
