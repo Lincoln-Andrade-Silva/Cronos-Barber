@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { CalendarPlus, Clock, Scissors, User, X } from "lucide-react";
+import { CalendarPlus, Clock, Scissors, Star, User, X } from "lucide-react";
 import { Badge, Button, ConfirmModal } from "@/components/ui";
 import { formatBRL } from "@/lib/format";
 import { cancelarAgendamento } from "./actions";
@@ -13,6 +13,7 @@ interface AgendamentoItem {
   id: string;
   dataHoraISO: string;
   status: StatusAg;
+  tipo: "avulso" | "plano";
   valor: string;
   servicoNome: string;
   barbeiroNome: string;
@@ -48,8 +49,11 @@ function Cartao({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="flex items-center gap-2 font-semibold">
-            <Scissors className="h-4 w-4 text-brand-light" />
-            {item.servicoNome}
+            <Scissors className="h-4 w-4 shrink-0 text-brand-light" />
+            <span className="truncate">{item.servicoNome}</span>
+            {item.tipo === "plano" && (
+              <Star className="h-3.5 w-3.5 shrink-0 fill-brand-light text-brand-light" />
+            )}
           </p>
           <p className="mt-1.5 flex items-center gap-2 text-sm text-muted">
             <User className="h-3.5 w-3.5" />
@@ -62,7 +66,11 @@ function Cartao({
         </div>
         <div className="flex flex-col items-end gap-2">
           <StatusBadge status={item.status} />
-          <span className="text-sm font-semibold text-brand-light">{formatBRL(item.valor)}</span>
+          {item.tipo === "plano" ? (
+            <span className="text-sm font-semibold text-emerald-400">Grátis (plano)</span>
+          ) : (
+            <span className="text-sm font-semibold text-brand-light">{formatBRL(item.valor)}</span>
+          )}
         </div>
       </div>
 

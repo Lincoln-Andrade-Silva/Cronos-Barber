@@ -71,3 +71,56 @@ export async function servicoCobertoPorPlano(
 
   return false;
 }
+
+/**
+ * Serviços atualmente inclusos em alguma assinatura ativa e válida do cliente
+ * (dentro da validade e do limite). Ignora o dia da semana, que só é conhecido
+ * ao escolher a data; serve para o indicador visual de "incluso no plano".
+ */
+export async function servicosCobertosDoCliente(clienteId: string): Promise<string[]> {
+  const agora = new Date();
+
+  const linhas = await db
+    .select({
+      servicoId: planoServicos.servicoId,
+      dataInicio: assinaturas.dataInicio,
+      diasValidade: planos.diasValidade,
+      limite: planoServicos.limite,
+    })
+    .from(assinaturas)
+    .innerJoin(planos, eq(assinaturas.planoId, planos.id))
+    .innerJoin(planoServicos, eq(planoServicos.planoId, planos.id))
+    .where(
+      and(
+        eq(assinaturas.clienteId, clienteId),
+        eq(assinaturas.status, "ativo"),
+        eq(planos.ativo, true),
+      ),
+    );
+
+  const cobertos = new Set<string>();
+  for (const linha of linhas) {
+    if (cobertos.has(linha.servicoId)) continue;
+    if (agora > somarDias(linha.dataInicio, linha.diasValidade)) continue;
+
+    if (linha.limite !== null) {
+      const [{ usados }] = await db
+        .select({ usados: count() })
+        .from(agendamentos)
+        .where(
+          and(
+            eq(agendamentos.clienteId, clienteId),
+            eq(agendamentos.servicoId, linha.servicoId),
+            eq(agendamentos.tipo, "plano"),
+            ne(agendamentos.status, "cancelado"),
+            gte(agendamentos.dataHora, linha.dataInicio),
+          ),
+        );
+      if (usados >= linha.limite) continue;
+    }
+
+    cobertos.add(linha.servicoId);
+  }
+
+  return [...cobertos];
+}
