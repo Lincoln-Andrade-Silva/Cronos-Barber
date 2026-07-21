@@ -15,11 +15,6 @@ export interface PlanoFormState {
 const schema = z.object({
   nome: z.string().trim().min(2, "Informe o nome do plano."),
   valor: z.coerce.number({ message: "Valor inválido." }).min(0, "Valor não pode ser negativo."),
-  diasValidade: z.coerce
-    .number({ message: "Validade inválida." })
-    .int()
-    .min(1, "Validade mínima é 1 dia.")
-    .max(3650, "Validade máxima é 3650 dias."),
   ativo: z.boolean(),
 });
 
@@ -32,14 +27,13 @@ export async function salvarPlano(
   const parsed = schema.safeParse({
     nome: formData.get("nome"),
     valor: formData.get("valor"),
-    diasValidade: formData.get("diasValidade"),
     ativo: formData.get("ativo") === "true",
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Dados inválidos." };
   }
 
-  const { nome, valor, diasValidade, ativo } = parsed.data;
+  const { nome, valor, ativo } = parsed.data;
   const id = formData.get("id");
   const vinculos = formData
     .getAll("servicoIds")
@@ -58,7 +52,7 @@ export async function salvarPlano(
 
   try {
     let planoId: string;
-    const valores = { nome, valor: valor.toFixed(2), diasValidade, diasValidos, ativo };
+    const valores = { nome, valor: valor.toFixed(2), diasValidos, ativo };
     if (typeof id === "string" && id) {
       await db.update(planos).set(valores).where(eq(planos.id, id));
       await db.delete(planoServicos).where(eq(planoServicos.planoId, id));

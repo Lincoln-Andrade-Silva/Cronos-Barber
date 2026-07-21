@@ -59,9 +59,9 @@ export function PlanosClient({
       cell: ({ getValue }) => <span>{formatBRL(String(getValue()))}</span>,
     },
     {
-      accessorKey: "diasValidade",
-      header: "Validade",
-      cell: ({ getValue }) => <span className="text-muted">{String(getValue())} dias</span>,
+      id: "cobranca",
+      header: "Cobrança",
+      cell: () => <span className="text-muted">Mensal</span>,
     },
     {
       id: "servicos",

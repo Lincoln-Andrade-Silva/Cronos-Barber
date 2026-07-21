@@ -6,7 +6,7 @@ import { Button, Field, FormError, Input, Modal, Toggle } from "@/components/ui"
 import type { Servico } from "@/db/schema";
 import { cn } from "@/lib/cn";
 import { formatBRL, formatDuracao } from "@/lib/format";
-import { DIAS_SEMANA } from "@/features/barbearia/horario";
+import { DIAS_SEMANA } from "@/features/estabelecimento/horario";
 import { salvarPlano, type PlanoFormState } from "./actions";
 
 const DIA_CURTO: Record<number, string> = {
@@ -23,7 +23,6 @@ export interface PlanoComServicos {
   id: string;
   nome: string;
   valor: string;
-  diasValidade: number;
   diasValidos: number[];
   ativo: boolean;
   servicos: { servicoId: string; limite: number | null }[];
@@ -108,27 +107,16 @@ export function PlanoModal({
           />
         </Field>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Valor mensal (R$)" htmlFor="pl-valor">
-            <Input
-              id="pl-valor"
-              name="valor"
-              type="number"
-              min={0}
-              step="0.01"
-              defaultValue={plano?.valor ?? "0"}
-            />
-          </Field>
-          <Field label="Validade (dias)" htmlFor="pl-dias">
-            <Input
-              id="pl-dias"
-              name="diasValidade"
-              type="number"
-              min={1}
-              defaultValue={plano?.diasValidade ?? 30}
-            />
-          </Field>
-        </div>
+        <Field label="Valor mensal (R$)" htmlFor="pl-valor">
+          <Input
+            id="pl-valor"
+            name="valor"
+            type="number"
+            min={0}
+            step="0.01"
+            defaultValue={plano?.valor ?? "0"}
+          />
+        </Field>
 
         <div>
           <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted">

@@ -2,7 +2,7 @@ import "dotenv/config";
 import { createClient } from "@supabase/supabase-js";
 import postgres from "postgres";
 
-const ADMIN_EMAIL = "admin@barbearia.com";
+const ADMIN_EMAIL = "admin@chronoss.com";
 const ADMIN_PASSWORD = "123456";
 
 async function main() {

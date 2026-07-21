@@ -67,7 +67,6 @@ export default async function CadastrosPage({
       id: p.id,
       nome: p.nome,
       valor: p.valor,
-      diasValidade: p.diasValidade,
       diasValidos: p.diasValidos,
       ativo: p.ativo,
       servicos: vinculos
@@ -134,7 +133,7 @@ export default async function CadastrosPage({
 
   return (
     <div>
-      <PageHeader title="Cadastros" description="Serviços, produtos e planos da barbearia." />
+      <PageHeader title="Cadastros" description="Serviços, produtos e planos do estabelecimento." />
       <UrlTabBar tabs={TABS} defaultTab="servicos" />
       {conteudo}
     </div>

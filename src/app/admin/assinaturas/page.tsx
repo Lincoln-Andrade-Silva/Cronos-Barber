@@ -73,7 +73,7 @@ export default async function AssinaturasPage({
 
   return (
     <div>
-      <PageHeader title="Assinaturas" description="Clientes assinantes da barbearia." />
+      <PageHeader title="Assinaturas" description="Clientes assinantes." />
       <AssinantesClient
         assinaturas={assinantes}
         clientes={clientes}

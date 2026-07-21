@@ -9,12 +9,12 @@ type Tab = "login" | "cadastro";
 
 export function AuthPanel({
   defaultTab = "login",
-  nomeBarbearia,
+  nomeEstabelecimento,
   logoUrl,
   aviso,
 }: {
   defaultTab?: Tab;
-  nomeBarbearia: string;
+  nomeEstabelecimento: string;
   logoUrl: string | null;
   aviso?: string;
 }) {
@@ -28,12 +28,12 @@ export function AuthPanel({
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={logoUrl}
-            alt={nomeBarbearia}
+            alt={nomeEstabelecimento}
             className="mb-3 h-16 w-16 rounded-full border border-line object-cover"
           />
         )}
         <span className="text-[32px] font-extrabold leading-none tracking-tight text-white">
-          {nomeBarbearia}
+          {nomeEstabelecimento}
         </span>
         <span className="mt-1.5 text-[11px] font-semibold uppercase tracking-wider text-brand-light">
           Sistema de Agendamento

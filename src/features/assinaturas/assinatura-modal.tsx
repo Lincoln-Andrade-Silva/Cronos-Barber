@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
+import { Gift } from "lucide-react";
 import { Button, Field, FormError, Modal, Select, Toggle } from "@/components/ui";
 import { salvarAssinatura, type AssinaturaFormState } from "./actions";
 
@@ -90,6 +91,13 @@ export function AssinaturaModal({
             ]}
           />
         </Field>
+
+        {!assinatura && (
+          <p className="flex items-start gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 px-3 py-2.5 text-xs text-emerald-400">
+            <Gift className="mt-0.5 h-4 w-4 shrink-0" />
+            Adição manual é cortesia: o cliente recebe o plano sem nenhuma cobrança.
+          </p>
+        )}
 
         <div className="flex items-center justify-between rounded-lg border border-line px-4 py-3">
           <div>

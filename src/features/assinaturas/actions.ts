@@ -40,7 +40,9 @@ export async function salvarAssinatura(
     if (typeof id === "string" && id) {
       await db.update(assinaturas).set({ planoId, status }).where(eq(assinaturas.id, id));
     } else {
-      await db.insert(assinaturas).values({ clienteId, planoId, status });
+      await db
+        .insert(assinaturas)
+        .values({ clienteId, planoId, status, gratuito: true, metodo: "manual" });
     }
   } catch (err) {
     console.error("Falha ao salvar assinatura:", err);

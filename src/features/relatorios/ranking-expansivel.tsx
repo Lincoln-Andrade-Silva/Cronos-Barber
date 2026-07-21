@@ -86,7 +86,7 @@ export function RankingExpansivel({ itens, vazio }: { itens: ItemExpansivel[]; v
                       key={i}
                       className="flex items-center gap-3 rounded-md px-2 py-1.5 text-xs transition hover:bg-surface/50"
                     >
-                      <span className="flex-1 truncate">{l.nome}</span>
+                      <span className="min-w-0 flex-1 truncate">{l.nome}</span>
                       <span className="w-10 text-right tabular-nums text-muted2">{l.qtd}x</span>
                       <span className="w-20 text-right tabular-nums text-muted">{l.valor}</span>
                       {p.colExtra && (

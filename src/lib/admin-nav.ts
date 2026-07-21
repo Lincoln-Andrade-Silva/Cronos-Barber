@@ -42,7 +42,7 @@ export const ADMIN_NAV: AdminNavSection[] = [
   {
     label: "Gestão",
     items: [
-      { label: "Barbeiros", href: "/admin/barbeiros", icon: Users, ready: true },
+      { label: "Funcionários", href: "/admin/barbeiros", icon: Users, ready: true },
       { label: "Cadastros", href: "/admin/cadastros", icon: Boxes, ready: true },
     ],
   },

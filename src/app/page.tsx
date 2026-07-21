@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CalendarPlus, Clock, History, MapPin } from "lucide-react";
+import { CalendarPlus, Clock, CreditCard, History, MapPin, Receipt } from "lucide-react";
 import { Card } from "@/components/ui";
+import { CreditoDev } from "@/components/credito-dev";
 import { getCurrentProfile } from "@/lib/auth";
-import { getBarbeariaInfo } from "@/lib/barbearia";
-import { DIAS_SEMANA, normalizarHorario } from "@/features/barbearia/horario";
+import { getEstabelecimentoInfo } from "@/lib/estabelecimento";
+import { DIAS_SEMANA, normalizarHorario } from "@/features/estabelecimento/horario";
 import { LogoutButton } from "@/features/auth/logout-button";
-import type { BarbeariaInfo } from "@/db/schema";
+import type { EstabelecimentoInfo } from "@/db/schema";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,7 @@ function FacebookIcon({ className }: { className?: string }) {
   );
 }
 
-function formatEndereco(info: BarbeariaInfo): string | null {
+function formatEndereco(info: EstabelecimentoInfo): string | null {
   const linha1 = [info.enderecoRua, info.enderecoNumero].filter(Boolean).join(", ");
   const linha2 = [info.enderecoBairro, info.enderecoCidade].filter(Boolean).join(" - ");
   return [linha1, linha2].filter(Boolean).join(" - ") || null;
@@ -54,8 +55,8 @@ export default async function ClientHome() {
   const profile = await getCurrentProfile();
   if (profile.tipo === "admin") redirect("/admin");
 
-  const info = await getBarbeariaInfo();
-  const nome = info?.nome?.trim() || "Cronos Barber";
+  const info = await getEstabelecimentoInfo();
+  const nome = info?.nome?.trim() || "Chronoss";
   const endereco = info ? formatEndereco(info) : null;
   const horario = normalizarHorario(info?.horario);
   const whatsappDigits = info?.whatsapp?.replace(/\D/g, "");
@@ -98,9 +99,25 @@ export default async function ClientHome() {
           <p className="text-sm font-semibold">Meus agendamentos</p>
           <span className="text-xs text-muted">Veja e gerencie seus horários</span>
         </Link>
+        <Link
+          href="/planos"
+          className="flex flex-col items-start gap-2 rounded-xl border border-line bg-panel p-4 transition hover:border-brand/40 hover:bg-surface"
+        >
+          <CreditCard className="h-5 w-5 text-brand-light" />
+          <p className="text-sm font-semibold">Planos</p>
+          <span className="text-xs text-muted">Assine e economize</span>
+        </Link>
+        <Link
+          href="/minhas-assinaturas"
+          className="flex flex-col items-start gap-2 rounded-xl border border-line bg-panel p-4 transition hover:border-brand/40 hover:bg-surface"
+        >
+          <Receipt className="h-5 w-5 text-brand-light" />
+          <p className="text-sm font-semibold">Minhas assinaturas</p>
+          <span className="text-xs text-muted">Status e cobranças</span>
+        </Link>
       </div>
 
-      {/* Info da barbearia */}
+      {/* Info do estabelecimento */}
       <Card className="space-y-5">
         {endereco && (
           <div className="flex items-start gap-3">
@@ -169,6 +186,8 @@ export default async function ClientHome() {
           </div>
         )}
       </Card>
+
+      <CreditoDev className="mt-8 text-center" />
     </main>
   );
 }

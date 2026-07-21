@@ -5,9 +5,9 @@ import { and, eq, gte, inArray, lt, ne } from "drizzle-orm";
 import { db } from "@/db";
 import { agendamentos, expediente, servicos } from "@/db/schema";
 import { getCurrentProfile } from "@/lib/auth";
-import { getBarbeariaInfo } from "@/lib/barbearia";
+import { getEstabelecimentoInfo } from "@/lib/estabelecimento";
 import { servicoCobertoPorPlano } from "@/lib/plano";
-import { normalizarHorario } from "@/features/barbearia/horario";
+import { normalizarHorario } from "@/features/estabelecimento/horario";
 import {
   gerarHorariosDisponiveis,
   instanteSlot,
@@ -74,8 +74,8 @@ export async function getHorariosDisponiveis(
       };
     }
   } else {
-    // Sem expediente cadastrado: usa o horário geral da barbearia.
-    const info = await getBarbeariaInfo();
+    // Sem expediente cadastrado: usa o horário geral do estabelecimento.
+    const info = await getEstabelecimentoInfo();
     const horario = normalizarHorario(info?.horario);
     const dia = horario.find((h) => h.dia === diaSemana);
     if (!dia || !dia.aberto) return [];

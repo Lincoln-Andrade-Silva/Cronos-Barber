@@ -162,6 +162,48 @@
       "when": 1784576778703,
       "tag": "0022_vendas_cliente_avulso",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1784588964109,
+      "tag": "0023_create_integracoes_pagamento",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1784589100000,
+      "tag": "0024_rename_barbearia_info",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1784602316222,
+      "tag": "0025_assinaturas_pagamento_campos",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1784602663861,
+      "tag": "0026_planos_validade_opcional",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1784603060728,
+      "tag": "0027_planos_periodicidade",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1784604213978,
+      "tag": "0028_integracoes_site_url",
+      "breakpoints": true
     }
   ]
 }

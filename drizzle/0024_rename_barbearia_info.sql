@@ -1,0 +1,1 @@
+ALTER TABLE "barbearia_info" RENAME TO "estabelecimento_info";

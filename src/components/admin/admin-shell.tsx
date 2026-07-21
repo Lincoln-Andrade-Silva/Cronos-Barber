@@ -6,22 +6,23 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { ADMIN_NAV } from "@/lib/admin-nav";
 import { LogoutButton } from "@/features/auth/logout-button";
+import { CreditoDev } from "@/components/credito-dev";
 import { cn } from "@/lib/cn";
 
-function Brand({ nomeBarbearia, logoUrl }: { nomeBarbearia: string; logoUrl: string | null }) {
+function Brand({ nomeEstabelecimento, logoUrl }: { nomeEstabelecimento: string; logoUrl: string | null }) {
   return (
     <div className="flex items-center gap-3 border-b border-line px-5 pb-[18px] pt-6">
       {logoUrl && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={logoUrl}
-          alt={nomeBarbearia}
+          alt={nomeEstabelecimento}
           className="h-10 w-10 shrink-0 rounded-full border border-line object-cover"
         />
       )}
       <div className="min-w-0">
         <p className="truncate text-lg font-extrabold tracking-tight text-white">
-          {nomeBarbearia}
+          {nomeEstabelecimento}
         </p>
         <p className="text-xs text-muted">Painel Admin</p>
       </div>
@@ -100,18 +101,19 @@ function UserFooter({ nome }: { nome: string }) {
       <div className="mt-3">
         <LogoutButton />
       </div>
+      <CreditoDev className="mt-4 text-center" />
     </div>
   );
 }
 
 export function AdminShell({
   nome,
-  nomeBarbearia,
+  nomeEstabelecimento,
   logoUrl,
   children,
 }: {
   nome: string;
-  nomeBarbearia: string;
+  nomeEstabelecimento: string;
   logoUrl: string | null;
   children: React.ReactNode;
 }) {
@@ -121,7 +123,7 @@ export function AdminShell({
     <div className="min-h-screen lg:pl-64">
       {/* Sidebar fixa (desktop) */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-line bg-panel lg:flex">
-        <Brand nomeBarbearia={nomeBarbearia} logoUrl={logoUrl} />
+        <Brand nomeEstabelecimento={nomeEstabelecimento} logoUrl={logoUrl} />
         <NavList />
         <UserFooter nome={nome} />
       </aside>
@@ -141,11 +143,11 @@ export function AdminShell({
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={logoUrl}
-              alt={nomeBarbearia}
+              alt={nomeEstabelecimento}
               className="h-7 w-7 rounded-full border border-line object-cover"
             />
           )}
-          <span className="text-sm font-semibold text-white">{nomeBarbearia}</span>
+          <span className="text-sm font-semibold text-white">{nomeEstabelecimento}</span>
         </div>
       </header>
 
@@ -159,7 +161,7 @@ export function AdminShell({
           />
           <aside className="absolute inset-y-0 left-0 flex w-72 max-w-[85%] flex-col bg-panel shadow-2xl">
             <div className="flex items-center justify-between border-b border-line pr-2">
-              <Brand nomeBarbearia={nomeBarbearia} logoUrl={logoUrl} />
+              <Brand nomeEstabelecimento={nomeEstabelecimento} logoUrl={logoUrl} />
               <button
                 type="button"
                 onClick={() => setOpen(false)}

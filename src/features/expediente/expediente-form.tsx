@@ -6,7 +6,7 @@ import { Copy } from "lucide-react";
 import { Button, FormError, FormSuccess, Input, Toggle } from "@/components/ui";
 import type { Expediente } from "@/db/schema";
 import { cn } from "@/lib/cn";
-import { DIAS_SEMANA } from "@/features/barbearia/horario";
+import { DIAS_SEMANA } from "@/features/estabelecimento/horario";
 import { salvarExpediente, type DiaExpediente, type ExpedienteFormState } from "./actions";
 
 function SubmitButton() {

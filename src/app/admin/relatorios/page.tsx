@@ -38,7 +38,7 @@ export default async function RelatoriosPage({
 
   return (
     <div>
-      <PageHeader title="Relatórios" description="Desempenho da barbearia no período." />
+      <PageHeader title="Relatórios" description="Desempenho do negócio no período." />
       <UrlTabBar tabs={TABS} defaultTab="financeiro" />
 
       <div className="mb-6">

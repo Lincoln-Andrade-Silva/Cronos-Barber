@@ -6,10 +6,6 @@ function diaSemanaSP(data: string): number {
   return new Date(`${data}T12:00:00-03:00`).getDay();
 }
 
-function somarDias(base: Date, dias: number): Date {
-  return new Date(base.getTime() + dias * 24 * 60 * 60 * 1000);
-}
-
 /**
  * Decide se um atendimento é coberto por uma assinatura ativa do cliente.
  * Considera: serviço incluso no plano, dia da semana válido, janela de validade
@@ -28,7 +24,6 @@ export async function servicoCobertoPorPlano(
     .select({
       planoId: planos.id,
       dataInicio: assinaturas.dataInicio,
-      diasValidade: planos.diasValidade,
       diasValidos: planos.diasValidos,
       limite: planoServicos.limite,
     })
@@ -47,7 +42,7 @@ export async function servicoCobertoPorPlano(
     );
 
   for (const plano of candidatos) {
-    if (inicio > somarDias(plano.dataInicio, plano.diasValidade)) continue;
+    // A assinatura ativa já garante a vigência (pagamento recorrente); só checa dia e limite.
     if (!plano.diasValidos.includes(dia)) continue;
 
     if (plano.limite !== null) {
@@ -78,13 +73,10 @@ export async function servicoCobertoPorPlano(
  * ao escolher a data; serve para o indicador visual de "incluso no plano".
  */
 export async function servicosCobertosDoCliente(clienteId: string): Promise<string[]> {
-  const agora = new Date();
-
   const linhas = await db
     .select({
       servicoId: planoServicos.servicoId,
       dataInicio: assinaturas.dataInicio,
-      diasValidade: planos.diasValidade,
       limite: planoServicos.limite,
     })
     .from(assinaturas)
@@ -101,7 +93,6 @@ export async function servicosCobertosDoCliente(clienteId: string): Promise<stri
   const cobertos = new Set<string>();
   for (const linha of linhas) {
     if (cobertos.has(linha.servicoId)) continue;
-    if (agora > somarDias(linha.dataInicio, linha.diasValidade)) continue;
 
     if (linha.limite !== null) {
       const [{ usados }] = await db
