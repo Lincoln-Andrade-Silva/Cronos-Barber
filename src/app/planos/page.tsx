@@ -1,6 +1,7 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { and, asc, eq, inArray } from "drizzle-orm";
-import { Check } from "lucide-react";
+import { Check, RefreshCw } from "lucide-react";
 import { db } from "@/db";
 import { assinaturas, planoServicos, planos, servicos } from "@/db/schema";
 import { Card } from "@/components/ui";
@@ -42,7 +43,19 @@ export default async function PlanosPage() {
     <main className="mx-auto min-h-screen max-w-3xl px-4 py-8">
       <ClienteHeader nomeUsuario={profile.nome} />
       <h1 className="mb-1 text-2xl font-extrabold tracking-tight">Planos</h1>
-      <p className="mb-6 text-sm text-muted">Assine e economize nos seus atendimentos.</p>
+      <p className="mb-4 text-sm text-muted">Assine e economize nos seus atendimentos.</p>
+
+      <div className="mb-6 flex items-start gap-2 rounded-lg border border-brand/30 bg-brand/10 p-3">
+        <RefreshCw className="mt-0.5 h-4 w-4 shrink-0 text-brand-light" />
+        <p className="text-xs text-muted">
+          A cobrança é <strong className="text-ink">mensal e recorrente</strong> no cartão: renova
+          automaticamente todo mês até você cancelar. Para cancelar, acesse{" "}
+          <Link href="/minhas-assinaturas" className="font-semibold text-brand-light underline">
+            Minhas assinaturas
+          </Link>{" "}
+          a qualquer momento.
+        </p>
+      </div>
 
       {listaPlanos.length === 0 ? (
         <Card>

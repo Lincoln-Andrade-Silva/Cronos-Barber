@@ -188,6 +188,8 @@ export const assinaturas = pgTable("assinaturas", {
   metodo: text("metodo").notNull().default("manual"),
   gatewayAssinaturaId: text("gateway_assinatura_id"),
   proximaCobranca: timestamp("proxima_cobranca", { withTimezone: true }),
+  // Marcada quando a cobrança recorrente falhou e o plano foi cancelado por isso.
+  falhaPagamento: boolean("falha_pagamento").notNull().default(false),
   criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
 });
 

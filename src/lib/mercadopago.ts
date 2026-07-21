@@ -61,11 +61,41 @@ export async function getPreapproval(id: string): Promise<Preapproval> {
 
 export async function cancelarPreapproval(id: string): Promise<void> {
   const token = await accessToken();
-  await fetch(`${API}/preapproval/${id}`, {
+  const res = await fetch(`${API}/preapproval/${id}`, {
     method: "PUT",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify({ status: "cancelled" }),
   });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(`MP cancelar preapproval: ${JSON.stringify(data)}`);
+  }
+}
+
+export interface AuthorizedPayment {
+  id: string;
+  preapproval_id?: string;
+  status?: string; // scheduled | processed | recycling | cancelled
+  payment?: { id?: number; status?: string; status_detail?: string };
+}
+
+/** Consulta uma cobrança da assinatura (evento subscription_authorized_payment). */
+export async function getAuthorizedPayment(id: string): Promise<AuthorizedPayment> {
+  const token = await accessToken();
+  const res = await fetch(`${API}/authorized_payments/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(`MP authorized_payment: ${JSON.stringify(data)}`);
+  return data;
+}
+
+/** True quando a cobrança recorrente falhou de forma definitiva (não é retentativa). */
+export function pagamentoRecorrenteFalhou(ap: AuthorizedPayment): boolean {
+  if (ap.status === "recycling" || ap.status === "scheduled") return false; // ainda tentando
+  if (ap.status === "cancelled") return true;
+  const st = ap.payment?.status;
+  return st === "rejected" || st === "cancelled";
 }
 
 /** Valida a assinatura (x-signature) da notificação. Sem segredo configurado, aceita (dev). */

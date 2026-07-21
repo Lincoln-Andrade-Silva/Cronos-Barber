@@ -1,0 +1,1 @@
+ALTER TABLE "assinaturas" ADD COLUMN "falha_pagamento" boolean DEFAULT false NOT NULL;

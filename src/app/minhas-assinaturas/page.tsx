@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { desc, eq } from "drizzle-orm";
-import { CalendarClock, CreditCard, Gift } from "lucide-react";
+import { AlertTriangle, CalendarClock, CreditCard, Gift } from "lucide-react";
 import { db } from "@/db";
 import { assinaturas, planos } from "@/db/schema";
 import { Badge, Card } from "@/components/ui";
@@ -34,11 +34,13 @@ export default async function MinhasAssinaturasPage({
   const rows = await db
     .select({
       id: assinaturas.id,
+      planoId: assinaturas.planoId,
       status: assinaturas.status,
       gratuito: assinaturas.gratuito,
       metodo: assinaturas.metodo,
       proximaCobranca: assinaturas.proximaCobranca,
       gatewayAssinaturaId: assinaturas.gatewayAssinaturaId,
+      falhaPagamento: assinaturas.falhaPagamento,
       planoNome: planos.nome,
       valor: planos.valor,
     })
@@ -46,6 +48,9 @@ export default async function MinhasAssinaturasPage({
     .innerJoin(planos, eq(assinaturas.planoId, planos.id))
     .where(eq(assinaturas.clienteId, profile.id))
     .orderBy(desc(assinaturas.criadoEm));
+
+  // Plano com assinatura ativa não deve exibir aviso de falha de uma tentativa antiga.
+  const planosAtivos = new Set(rows.filter((r) => r.status === "ativo").map((r) => r.planoId));
 
   return (
     <main className="mx-auto min-h-screen max-w-2xl px-4 py-8">
@@ -68,6 +73,7 @@ export default async function MinhasAssinaturasPage({
           {rows.map((a) => {
             const ativo = a.status === "ativo";
             const proxima = dataBR(a.proximaCobranca);
+            const mostrarFalha = !ativo && a.falhaPagamento && !planosAtivos.has(a.planoId);
             return (
               <Card key={a.id} className="space-y-3">
                 <div className="flex items-start justify-between gap-3">
@@ -96,6 +102,22 @@ export default async function MinhasAssinaturasPage({
                     <CalendarClock className="h-3.5 w-3.5" />
                     Próxima cobrança em {proxima}
                   </p>
+                )}
+
+                {mostrarFalha && (
+                  <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+                    <div className="text-xs text-amber-200">
+                      <p className="font-semibold">Pagamento não aprovado</p>
+                      <p className="mt-0.5 text-amber-200/80">
+                        A cobrança mensal falhou e este plano foi cancelado. Para continuar usando,{" "}
+                        <Link href="/planos" className="font-semibold underline">
+                          assine novamente
+                        </Link>
+                        .
+                      </p>
+                    </div>
+                  </div>
                 )}
 
                 {ativo && a.gatewayAssinaturaId && (

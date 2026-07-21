@@ -75,7 +75,9 @@ export async function cancelarAssinaturaCliente(id: string): Promise<AssinarResu
     try {
       await cancelarPreapproval(assinatura.gatewayAssinaturaId);
     } catch (e) {
+      // Não inativa localmente se o gateway não confirmou: evita cobrança fantasma.
       console.error("Falha ao cancelar no MP:", e);
+      return { error: "Não foi possível cancelar agora. Tente novamente em instantes." };
     }
   }
 

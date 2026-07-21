@@ -204,6 +204,13 @@
       "when": 1784604213978,
       "tag": "0028_integracoes_site_url",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1784607317847,
+      "tag": "0029_assinaturas_falha_pagamento",
+      "breakpoints": true
     }
   ]
 }

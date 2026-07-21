@@ -29,7 +29,11 @@ export async function sincronizarAssinatura(
   if (existente) {
     await db
       .update(assinaturas)
-      .set({ status: ativo ? "ativo" : "inativo", proximaCobranca: proxima })
+      .set({
+        status: ativo ? "ativo" : "inativo",
+        proximaCobranca: ativo ? proxima : null,
+        falhaPagamento: ativo ? false : existente.falhaPagamento,
+      })
       .where(eq(assinaturas.id, existente.id));
   } else if (ativo) {
     await db.insert(assinaturas).values({

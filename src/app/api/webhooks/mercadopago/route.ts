@@ -2,7 +2,13 @@ import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { assinaturas } from "@/db/schema";
-import { getPreapproval, validarWebhook } from "@/lib/mercadopago";
+import {
+  cancelarPreapproval,
+  getAuthorizedPayment,
+  getPreapproval,
+  pagamentoRecorrenteFalhou,
+  validarWebhook,
+} from "@/lib/mercadopago";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -32,16 +38,31 @@ export async function POST(req: Request) {
   });
   if (!valido) return NextResponse.json({ error: "assinatura inválida" }, { status: 401 });
 
-  // Tratamos apenas eventos de assinatura (preapproval).
-  const ehPreapproval = type === "subscription_preapproval" || type === "preapproval";
-  if (!ehPreapproval) return NextResponse.json({ ok: true });
-
   try {
+    // Cobrança recorrente: se falhou de forma definitiva, cancela e inativa o plano.
+    if (type === "subscription_authorized_payment" || type === "authorized_payment") {
+      const ap = await getAuthorizedPayment(String(dataId));
+      if (ap.preapproval_id && pagamentoRecorrenteFalhou(ap)) {
+        await cancelarPreapproval(ap.preapproval_id).catch(() => {});
+        await db
+          .update(assinaturas)
+          .set({ status: "inativo", falhaPagamento: true, proximaCobranca: null })
+          .where(eq(assinaturas.gatewayAssinaturaId, ap.preapproval_id));
+      }
+      return NextResponse.json({ ok: true });
+    }
+
+    // Mudança de status da assinatura (preapproval).
+    const ehPreapproval = type === "subscription_preapproval" || type === "preapproval";
+    if (!ehPreapproval) return NextResponse.json({ ok: true });
+
     const pre = await getPreapproval(String(dataId));
     const [clienteId, planoId] = (pre.external_reference ?? "").split(":");
     if (!clienteId || !planoId) return NextResponse.json({ ok: true });
 
     const ativo = pre.status === "authorized";
+    // "paused" no MP = cobranças falharam; tratamos como falha de pagamento.
+    const falhou = pre.status === "paused";
     const proxima = pre.next_payment_date ? new Date(pre.next_payment_date) : null;
 
     const [existente] = await db
@@ -52,7 +73,11 @@ export async function POST(req: Request) {
     if (existente) {
       await db
         .update(assinaturas)
-        .set({ status: ativo ? "ativo" : "inativo", proximaCobranca: proxima })
+        .set({
+          status: ativo ? "ativo" : "inativo",
+          proximaCobranca: ativo ? proxima : null,
+          falhaPagamento: falhou ? true : ativo ? false : existente.falhaPagamento,
+        })
         .where(eq(assinaturas.id, existente.id));
     } else if (ativo) {
       await db.insert(assinaturas).values({

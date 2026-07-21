@@ -7,11 +7,17 @@ import { cancelarAssinaturaCliente } from "./assinar-actions";
 
 export function CancelarButton({ id, planoNome }: { id: string; planoNome: string }) {
   const [aberto, setAberto] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function confirmar() {
+    setErro(null);
     startTransition(async () => {
-      await cancelarAssinaturaCliente(id);
+      const res = await cancelarAssinaturaCliente(id);
+      if (res?.error) {
+        setErro(res.error);
+        return;
+      }
       setAberto(false);
     });
   }
@@ -38,6 +44,7 @@ export function CancelarButton({ id, planoNome }: { id: string; planoNome: strin
           <>
             Deseja cancelar a assinatura do plano <strong className="text-ink">{planoNome}</strong>?
             As cobranças futuras serão interrompidas.
+            {erro && <span className="mt-2 block text-sm text-red-400">{erro}</span>}
           </>
         }
       />
