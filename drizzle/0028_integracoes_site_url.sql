@@ -1,0 +1,1 @@
+ALTER TABLE "integracoes_pagamento" ADD COLUMN "site_url" text;

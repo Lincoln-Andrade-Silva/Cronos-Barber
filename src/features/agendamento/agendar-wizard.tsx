@@ -76,6 +76,10 @@ export function AgendarWizard({
   }, [precos, selecionados, cobertos]);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [passo]);
+
+  useEffect(() => {
     if (passo !== 2 || !barbeiro || selecionados.length === 0) return;
     let ativo = true;
     setCarregandoSlots(true);

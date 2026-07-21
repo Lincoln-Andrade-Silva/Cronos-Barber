@@ -1,4 +1,4 @@
-import { getBarbeariaBrand } from "@/lib/barbearia";
+import { getEstabelecimentoBrand } from "@/lib/estabelecimento";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +9,7 @@ const FEATURES = [
 ];
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
-  const { nome: nomeBarbearia, logoUrl } = await getBarbeariaBrand();
+  const { nome: nomeEstabelecimento, logoUrl } = await getEstabelecimentoBrand();
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
@@ -23,12 +23,12 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={logoUrl}
-              alt={nomeBarbearia}
+              alt={nomeEstabelecimento}
               className="h-11 w-11 rounded-full border border-line object-cover"
             />
           )}
           <span className="text-[26px] font-extrabold tracking-tight text-white">
-            {nomeBarbearia}
+            {nomeEstabelecimento}
           </span>
         </div>
 
@@ -39,10 +39,10 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
           <h1 className="mb-4 text-[50px] font-extrabold leading-[1.1] tracking-tight">
             A arte do
             <br />
-            corte <span className="text-brand-light">perfeito.</span>
+            atendimento <span className="text-brand-light">perfeito.</span>
           </h1>
           <p className="max-w-[360px] text-[15px] leading-[1.8] text-muted">
-            Gerencie agendamentos com elegância. Para clientes, barbeiros e administradores,
+            Gerencie agendamentos com elegância. Para clientes, profissionais e administradores,
             em um só lugar.
           </p>
         </div>

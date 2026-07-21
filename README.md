@@ -1,8 +1,8 @@
-# Cronos Barber
+# Chronoss
 
-Sistema de agendamento e gestão para barbearia: login, agenda, painel admin (dashboard, financeiro, relatórios, serviços/produtos, assinaturas e configurações).
+Sistema de agendamento e gestão para estabelecimento: login, agenda, painel admin (dashboard, financeiro, relatórios, serviços/produtos, assinaturas e configurações).
 
-Construído como **template reutilizável**: modelo **1 barbearia por deploy** (cada cliente = novo projeto Vercel + novo Supabase, mesmo código). A identidade da barbearia (nome, logo, contatos) é configurável dentro do sistema, sem mexer em código.
+Construído como **template reutilizável**: modelo **1 estabelecimento por deploy** (cada cliente = novo projeto Vercel + novo Supabase, mesmo código). A identidade do estabelecimento (nome, logo, contatos) é configurável dentro do sistema, sem mexer em código.
 
 ## Stack
 
@@ -19,7 +19,7 @@ npm install
 cp .env.example .env    # preencha as credenciais do Supabase
 npm run db:check        # testa a conexão com o Postgres
 npm run db:migrate      # cria as tabelas, RLS e triggers
-npm run seed:admin      # cria o admin padrão (admin@barbearia.com / 123456)
+npm run seed:admin      # cria o admin padrão (admin@chronoss.com / 123456)
 npm run dev             # http://localhost:3000
 ```
 
@@ -55,7 +55,7 @@ Ver `.env.example`. Resumo:
 - Supabase Auth (email + senha) via `@supabase/ssr`, com cookies SSR.
 - Papéis em `profiles.tipo` (`admin` / `cliente`); proteção de rotas no middleware + gate por papel nos layouts.
 - Registro cria o usuário já confirmado (via service_role), sem depender de SMTP.
-- Admin padrão: `admin@barbearia.com` / `123456`.
+- Admin padrão: `admin@chronoss.com` / `123456`.
 
 ## Padrões de UI (design system)
 
@@ -68,13 +68,13 @@ Componentes reutilizáveis em `src/components/ui` (fonte única de estilo):
 
 O menu lateral do admin fica em `src/components/admin/admin-shell.tsx` (responsivo, drawer no mobile), dividido por seções (`src/lib/admin-nav.ts`). Tokens de cor semânticos (`bg`, `panel`, `surface`, `line`, `ink`, `muted`, `brand`) em `tailwind.config.ts`.
 
-A marca exibida (login, sidebar, home) vem de `getBarbeariaNome()` (`src/lib/barbearia.ts`), lida da tabela `barbearia_info`, com fallback `Cronos Barber`. Editável em Configurações > Barbearia (Fase 2).
+A marca exibida (login, sidebar, home) vem de `getEstabelecimentoNome()` (`src/lib/estabelecimento.ts`), lida da tabela `estabelecimento_info`, com fallback `Chronoss`. Editável em Configurações > Estabelecimento (Fase 2).
 
 ## Roadmap (fases)
 
 - [x] **Fase 0**: Setup (Next.js, Tailwind, Drizzle, Supabase conectado)
 - [x] **Fase 1**: Auth (registro/login, `profiles` com tipo/status, proteção de rotas, seed admin, design system base)
-- [x] **Fase 2**: Cadastros base (Serviços, Produtos, Config. Barbearia com logo/horário/endereço; Home do cliente)
+- [x] **Fase 2**: Cadastros base (Serviços, Produtos, Config. Estabelecimento com logo/horário/endereço; Home do cliente)
 - [x] **Fase 3**: Agendamento (fluxo do cliente + conflito de horário + expediente por barbeiro)
 - [x] **Fase 4**: Histórico do cliente
 - [x] **Fase 5**: Financeiro básico (faturamento do dia)

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getBarbeariaBrand } from "@/lib/barbearia";
+import { getEstabelecimentoBrand } from "@/lib/estabelecimento";
 import { AuthPanel } from "@/features/auth/auth-panel";
 
 export const dynamic = "force-dynamic";
@@ -9,14 +9,14 @@ export default async function LoginPage({
 }: {
   searchParams: { erro?: string };
 }) {
-  const { nome, logoUrl } = await getBarbeariaBrand();
+  const { nome, logoUrl } = await getEstabelecimentoBrand();
   const aviso =
     searchParams.erro === "inativo"
-      ? "Seu acesso está inativo. Fale com a barbearia."
+      ? "Seu acesso está inativo. Fale com o estabelecimento."
       : undefined;
   return (
     <Suspense fallback={null}>
-      <AuthPanel defaultTab="login" nomeBarbearia={nome} logoUrl={logoUrl} aviso={aviso} />
+      <AuthPanel defaultTab="login" nomeEstabelecimento={nome} logoUrl={logoUrl} aviso={aviso} />
     </Suspense>
   );
 }

@@ -4,11 +4,11 @@ import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
-import { barbeariaInfo, type HorarioDia } from "@/db/schema";
+import { estabelecimentoInfo, type HorarioDia } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth";
 import { uploadImagem } from "@/lib/storage";
 
-export interface BarbeariaFormState {
+export interface EstabelecimentoFormState {
   ok?: boolean;
   error?: string;
 }
@@ -50,10 +50,10 @@ function parseHorario(raw: FormDataEntryValue | null): HorarioDia[] | null {
   }
 }
 
-export async function salvarBarbearia(
-  _prev: BarbeariaFormState,
+export async function salvarEstabelecimento(
+  _prev: EstabelecimentoFormState,
   formData: FormData,
-): Promise<BarbeariaFormState> {
+): Promise<EstabelecimentoFormState> {
   await requireAdmin();
 
   const parsed = schema.safeParse({
@@ -82,7 +82,7 @@ export async function salvarBarbearia(
     }
 
     await db
-      .update(barbeariaInfo)
+      .update(estabelecimentoInfo)
       .set({
         nome: vazioParaNull(dados.nome),
         whatsapp: vazioParaNull(dados.whatsapp),
@@ -96,9 +96,9 @@ export async function salvarBarbearia(
         ...(logoUrl ? { logoUrl } : {}),
         atualizadoEm: new Date(),
       })
-      .where(eq(barbeariaInfo.id, 1));
+      .where(eq(estabelecimentoInfo.id, 1));
   } catch (err) {
-    console.error("Falha ao salvar barbearia:", err);
+    console.error("Falha ao salvar estabelecimento:", err);
     return { error: "Não foi possível salvar. Tente novamente." };
   }
 

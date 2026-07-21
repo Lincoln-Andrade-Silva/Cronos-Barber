@@ -247,7 +247,7 @@ export default async function AdminHome({
 
   return (
     <div>
-      <PageHeader title="Dashboard" description="Visão geral da barbearia no período." />
+      <PageHeader title="Dashboard" description="Visão geral do negócio no período." />
 
       <div className="mb-6">
         <PeriodoNav de={de} ate={ate} />

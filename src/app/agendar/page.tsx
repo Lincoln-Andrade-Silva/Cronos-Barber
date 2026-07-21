@@ -1,11 +1,10 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { asc, eq } from "drizzle-orm";
-import { ChevronLeft } from "lucide-react";
 import { db } from "@/db";
 import { barbeiros, servicos } from "@/db/schema";
 import { getCurrentProfile } from "@/lib/auth";
 import { servicosCobertosDoCliente } from "@/lib/plano";
+import { ClienteHeader } from "@/features/cliente/cliente-header";
 import { AgendarWizard } from "@/features/agendamento/agendar-wizard";
 
 export const dynamic = "force-dynamic";
@@ -22,13 +21,7 @@ export default async function AgendarPage() {
 
   return (
     <main className="mx-auto min-h-screen max-w-3xl px-4 py-8">
-      <Link
-        href="/"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted transition hover:text-ink"
-      >
-        <ChevronLeft className="h-4 w-4" />
-        Início
-      </Link>
+      <ClienteHeader nomeUsuario={profile.nome} />
       <h1 className="mb-6 text-2xl font-extrabold tracking-tight">Agendar horário</h1>
       <AgendarWizard
         servicos={listaServicos}

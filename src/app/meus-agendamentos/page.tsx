@@ -1,10 +1,9 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { desc, eq } from "drizzle-orm";
-import { ChevronLeft } from "lucide-react";
 import { db } from "@/db";
 import { agendamentos, barbeiros, servicos } from "@/db/schema";
 import { getCurrentProfile } from "@/lib/auth";
+import { ClienteHeader } from "@/features/cliente/cliente-header";
 import { MeusAgendamentos } from "@/features/agendamento/meus-agendamentos";
 
 export const dynamic = "force-dynamic";
@@ -45,13 +44,7 @@ export default async function MeusAgendamentosPage() {
 
   return (
     <main className="mx-auto min-h-screen max-w-2xl px-4 py-8">
-      <Link
-        href="/"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted transition hover:text-ink"
-      >
-        <ChevronLeft className="h-4 w-4" />
-        Início
-      </Link>
+      <ClienteHeader nomeUsuario={profile.nome} />
       <h1 className="mb-6 text-2xl font-extrabold tracking-tight">Meus agendamentos</h1>
       <MeusAgendamentos items={items} />
     </main>

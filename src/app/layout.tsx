@@ -6,14 +6,16 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "Cronos Barber",
-  description: "Sistema de agendamento e gestão para barbearia.",
+  title: "Chronoss",
+  description: "Agendamento e gestão para o seu negócio.",
 };
 
 export const viewport: Viewport = {
   themeColor: "#0a0a12",
   width: "device-width",
   initialScale: 1,
+  // Evita o zoom automático ao focar inputs no mobile.
+  maximumScale: 1,
 };
 
 export default function RootLayout({

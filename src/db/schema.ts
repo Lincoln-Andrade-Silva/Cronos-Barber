@@ -38,8 +38,8 @@ export interface HorarioDia {
   fecha: string;
 }
 
-// Identidade da barbearia (linha única, id sempre = 1). Editável em Configurações.
-export const barbeariaInfo = pgTable("barbearia_info", {
+// Identidade do estabelecimento (linha única, id sempre = 1). Editável em Configurações.
+export const estabelecimentoInfo = pgTable("estabelecimento_info", {
   id: integer("id").primaryKey().default(1),
   nome: text("nome"),
   logoUrl: text("logo_url"),
@@ -54,7 +54,22 @@ export const barbeariaInfo = pgTable("barbearia_info", {
   atualizadoEm: timestamp("atualizado_em", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export type BarbeariaInfo = typeof barbeariaInfo.$inferSelect;
+export type EstabelecimentoInfo = typeof estabelecimentoInfo.$inferSelect;
+
+// Credenciais do gateway de pagamento (linha única, id = 1). Server-only: RLS travada,
+// nunca consultada pelo client. O access_token é secreto — não expor.
+export const integracoesPagamento = pgTable("integracoes_pagamento", {
+  id: integer("id").primaryKey().default(1),
+  provedor: text("provedor").notNull().default("mercadopago"),
+  accessToken: text("access_token"),
+  publicKey: text("public_key"),
+  webhookSecret: text("webhook_secret"),
+  // URL pública base do site (checkout/webhook). Ex: https://seudominio.com
+  siteUrl: text("site_url"),
+  atualizadoEm: timestamp("atualizado_em", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type IntegracaoPagamento = typeof integracoesPagamento.$inferSelect;
 
 export const barbeiros = pgTable("barbeiros", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -135,7 +150,8 @@ export const planos = pgTable("planos", {
   id: uuid("id").primaryKey().defaultRandom(),
   nome: text("nome").notNull(),
   valor: numeric("valor", { precision: 10, scale: 2 }).notNull().default("0"),
-  diasValidade: integer("dias_validade").notNull().default(30),
+  // Frequência da cobrança recorrente: "semanal" ou "mensal".
+  periodicidade: text("periodicidade").notNull().default("mensal"),
   // Dias da semana (0=domingo ... 6=sábado) em que o plano cobre os serviços.
   // Fora desses dias, o atendimento é cobrado avulso.
   diasValidos: jsonb("dias_validos").$type<number[]>().notNull().default([0, 1, 2, 3, 4, 5, 6]),
@@ -167,6 +183,11 @@ export const assinaturas = pgTable("assinaturas", {
   planoId: uuid("plano_id").notNull(),
   dataInicio: timestamp("data_inicio", { withTimezone: true }).notNull().defaultNow(),
   status: statusAssinatura("status").notNull().default("ativo"),
+  // Vínculo manual (cortesia) = sem cobrança. Comprado = pago via gateway.
+  gratuito: boolean("gratuito").notNull().default(false),
+  metodo: text("metodo").notNull().default("manual"),
+  gatewayAssinaturaId: text("gateway_assinatura_id"),
+  proximaCobranca: timestamp("proxima_cobranca", { withTimezone: true }),
   criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
 });
 

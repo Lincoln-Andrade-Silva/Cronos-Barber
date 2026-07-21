@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { Button, Field, FormError, FormSuccess, ImageUpload, Input, Toggle } from "@/components/ui";
-import type { BarbeariaInfo, HorarioDia } from "@/db/schema";
+import type { EstabelecimentoInfo, HorarioDia } from "@/db/schema";
 import { cn } from "@/lib/cn";
 import { maskTelefone } from "@/lib/mask";
 import { DIAS_SEMANA, normalizarHorario } from "./horario";
-import { salvarBarbearia, type BarbeariaFormState } from "./actions";
+import { salvarEstabelecimento, type EstabelecimentoFormState } from "./actions";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -94,8 +94,8 @@ function HorarioEditor({
   );
 }
 
-export function BarbeariaForm({ info }: { info: BarbeariaInfo | null }) {
-  const [state, formAction] = useFormState<BarbeariaFormState, FormData>(salvarBarbearia, {});
+export function EstabelecimentoForm({ info }: { info: EstabelecimentoInfo | null }) {
+  const [state, formAction] = useFormState<EstabelecimentoFormState, FormData>(salvarEstabelecimento, {});
   const [whatsapp, setWhatsapp] = useState(info?.whatsapp ?? "");
   const [horario, setHorario] = useState<HorarioDia[]>(normalizarHorario(info?.horario));
 
@@ -109,8 +109,8 @@ export function BarbeariaForm({ info }: { info: BarbeariaInfo | null }) {
 
       {/* Dados gerais */}
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Nome da barbearia" htmlFor="nome">
-          <Input id="nome" name="nome" defaultValue={info?.nome ?? ""} placeholder="Cronos Barber" />
+        <Field label="Nome do estabelecimento" htmlFor="nome">
+          <Input id="nome" name="nome" defaultValue={info?.nome ?? ""} placeholder="Chronoss" />
         </Field>
 
         <Field label="WhatsApp" htmlFor="whatsapp">
