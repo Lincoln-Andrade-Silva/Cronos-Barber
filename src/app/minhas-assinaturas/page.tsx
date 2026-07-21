@@ -9,6 +9,7 @@ import { getCurrentProfile } from "@/lib/auth";
 import { formatBRL } from "@/lib/format";
 import { ClienteHeader } from "@/features/cliente/cliente-header";
 import { CancelarButton } from "@/features/planos/cancelar-button";
+import { sincronizarAssinatura } from "@/features/planos/sincronizar";
 
 export const dynamic = "force-dynamic";
 
@@ -17,9 +18,18 @@ function dataBR(d: Date | null): string | null {
   return d.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
 }
 
-export default async function MinhasAssinaturasPage() {
+export default async function MinhasAssinaturasPage({
+  searchParams,
+}: {
+  searchParams: { preapproval_id?: string };
+}) {
   const profile = await getCurrentProfile();
   if (profile.tipo === "admin") redirect("/admin");
+
+  // Ao voltar do checkout do MP, ativa a assinatura na hora (sem depender do webhook).
+  if (searchParams.preapproval_id) {
+    await sincronizarAssinatura(searchParams.preapproval_id, profile.id);
+  }
 
   const rows = await db
     .select({

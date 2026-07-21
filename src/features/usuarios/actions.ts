@@ -140,3 +140,22 @@ export async function alternarStatusUsuario(
     .where(eq(profiles.id, id));
   revalidatePath("/admin/cadastros");
 }
+
+export async function excluirUsuario(id: string): Promise<void> {
+  const admin = await requireAdmin();
+  if (id === admin.id) return; // não exclui a si mesmo
+
+  const supabaseUrl = getSupabaseUrl();
+  const serviceKey = getServiceRoleKey();
+  if (supabaseUrl && serviceKey) {
+    const supabaseAdmin = createClient(supabaseUrl, serviceKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+    // Remove o usuário de autenticação (o profile cai por cascade, se houver).
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(id);
+    if (error) console.error("Falha ao excluir usuário de auth:", error);
+  }
+
+  await db.delete(profiles).where(eq(profiles.id, id));
+  revalidatePath("/admin/cadastros");
+}

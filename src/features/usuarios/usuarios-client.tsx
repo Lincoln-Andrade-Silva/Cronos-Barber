@@ -2,9 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
-import { Pencil, Plus, Power, PowerOff } from "lucide-react";
-import { Badge, Button, DataTableServer, UrlSelect } from "@/components/ui";
-import { alternarStatusUsuario } from "./actions";
+import { Pencil, Plus, Power, PowerOff, Trash2 } from "lucide-react";
+import { Badge, Button, ConfirmModal, DataTableServer, UrlSelect } from "@/components/ui";
+import { cn } from "@/lib/cn";
+import { alternarStatusUsuario, excluirUsuario } from "./actions";
 import { UsuarioModal } from "./usuario-modal";
 
 export interface UsuarioRow {
@@ -31,11 +32,21 @@ export function UsuariosClient({
   pageCount: number;
 }) {
   const [modal, setModal] = useState<{ usuario: UsuarioRow | null } | null>(null);
-  const [, startTransition] = useTransition();
+  const [excluir, setExcluir] = useState<UsuarioRow | null>(null);
+  const [pending, startTransition] = useTransition();
 
   function toggleStatus(u: UsuarioRow) {
     startTransition(() => {
       void alternarStatusUsuario(u.id, u.status === "ativo" ? "inativo" : "ativo");
+    });
+  }
+
+  function confirmarExclusao() {
+    if (!excluir) return;
+    const id = excluir.id;
+    startTransition(async () => {
+      await excluirUsuario(id);
+      setExcluir(null);
     });
   }
 
@@ -95,6 +106,15 @@ export function UsuariosClient({
             >
               {u.status === "ativo" ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
             </button>
+            <button
+              type="button"
+              title={ehVoce ? "Você não pode excluir a si mesmo" : "Excluir"}
+              disabled={ehVoce}
+              onClick={() => setExcluir(u)}
+              className={cn(iconBtn, "hover:text-red-400")}
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
           </div>
         );
       },
@@ -140,6 +160,22 @@ export function UsuariosClient({
           onClose={() => setModal(null)}
         />
       )}
+
+      <ConfirmModal
+        open={!!excluir}
+        onClose={() => setExcluir(null)}
+        onConfirm={confirmarExclusao}
+        loading={pending}
+        title="Excluir usuário"
+        confirmLabel="Excluir"
+        message={
+          <>
+            Tem certeza que deseja excluir{" "}
+            <strong className="text-ink">{excluir?.nome}</strong>? Essa ação remove o acesso e não
+            pode ser desfeita.
+          </>
+        }
+      />
     </>
   );
 }
