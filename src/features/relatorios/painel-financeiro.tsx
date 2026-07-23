@@ -70,9 +70,12 @@ export async function PainelFinanceiro({
   const fatServicos = finalizados.reduce((s, r) => s + Number(r.valor), 0);
   const fatProdutos = vendas.reduce((s, r) => s + Number(r.total), 0);
   const fatTotal = fatServicos + fatProdutos;
-  const recorrente = ativas.reduce((s, a) => s + Number(a.valor), 0);
+  // Cortesia (gratuito) não fatura: fora da receita recorrente.
+  const recorrente = ativas.filter((a) => !a.gratuito).reduce((s, a) => s + Number(a.valor), 0);
   const pagantes = finalizados.filter((r) => r.tipo !== "plano").length;
-  const ticket = pagantes > 0 ? fatServicos / pagantes : 0;
+  // Ticket médio = faturamento (serviços + produtos) por atendimento; balão separa só serviços.
+  const ticket = pagantes > 0 ? (fatServicos + fatProdutos) / pagantes : 0;
+  const ticketServicos = pagantes > 0 ? fatServicos / pagantes : 0;
 
   // Recebimento por forma e reembolsos.
   const servMP = finalizados
@@ -154,7 +157,7 @@ export async function PainelFinanceiro({
           { label: "Serviços", valor: formatBRL(fatServicos), icon: Scissors },
           { label: "Produtos", valor: formatBRL(fatProdutos), icon: ShoppingBag },
           { label: "Receita recorrente", valor: formatBRL(recorrente), icon: Repeat },
-          { label: "Ticket médio", valor: formatBRL(ticket), icon: Receipt },
+          { label: "Ticket médio", valor: formatBRL(ticket), icon: Receipt, sub: `só serviços: ${formatBRL(ticketServicos)}` },
           { label: "Reembolsos", valor: formatBRL(reembolsos), icon: Undo2 },
         ]}
       />

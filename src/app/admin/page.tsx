@@ -22,6 +22,7 @@ import {
 import { Card, PageHeader } from "@/components/ui";
 import { instanteSlot } from "@/lib/disponibilidade";
 import { formatBRL } from "@/lib/format";
+import { formatFrequencia, frequenciaPorCliente, mediaFrequenciaGeral } from "@/lib/frequencia";
 import { METODOS_PAGAMENTO, rotuloMetodo } from "@/lib/metodo-pagamento";
 import { diasAtras, gerarDias, hojeSP, spYmd } from "@/features/relatorios/datas";
 import { PeriodoNav } from "@/features/relatorios/periodo-nav";
@@ -107,6 +108,15 @@ export default async function AdminHome({
     atendimentos.length > 0 ? ((cancelados + estornados) / atendimentos.length) * 100 : 0;
   const clientesUnicos = new Set(finalizados.map((r) => r.clienteId).filter(Boolean)).size;
 
+  // Frequência de retorno: intervalo médio entre visitas dos clientes no período.
+  const frequenciaMedia = mediaFrequenciaGeral(
+    frequenciaPorCliente(
+      finalizados
+        .filter((r) => r.clienteId)
+        .map((r) => ({ clienteId: r.clienteId as string, dataHora: r.dataHora })),
+    ),
+  );
+
   // Recebido antecipado (cartão via MP) x ainda a receber no balcão, no período.
   const recebidoOnline = atendimentos
     .filter(
@@ -142,8 +152,11 @@ export default async function AdminHome({
   const fatProdutos = vendas.reduce((s, r) => s + Number(r.total), 0);
   const fatTotal = fatServicos + fatProdutos;
   const pagantes = finalizados.filter((r) => r.tipo !== "plano").length;
-  const ticket = pagantes > 0 ? fatServicos / pagantes : 0;
-  const recorrente = ativas.reduce((s, a) => s + Number(a.valor), 0);
+  // Ticket médio = faturamento (serviços + produtos) por atendimento pagante; balão separa só serviços.
+  const ticket = pagantes > 0 ? (fatServicos + fatProdutos) / pagantes : 0;
+  const ticketServicos = pagantes > 0 ? fatServicos / pagantes : 0;
+  // Cortesia (gratuito) não fatura: fora da receita recorrente.
+  const recorrente = ativas.filter((a) => !a.gratuito).reduce((s, a) => s + Number(a.valor), 0);
 
   // Série diária (serviços + produtos)
   const dias = gerarDias(inicio, fimExclusivo);
@@ -162,7 +175,7 @@ export default async function AdminHome({
   for (const a of ativas) {
     const p = porPlano.get(a.planoNome) ?? { qtd: 0, receita: 0 };
     p.qtd += 1;
-    p.receita += Number(a.valor);
+    p.receita += a.gratuito ? 0 : Number(a.valor);
     porPlano.set(a.planoNome, p);
   }
   const planosRank = [...porPlano.entries()].sort((a, b) => b[1].qtd - a[1].qtd);
@@ -303,6 +316,7 @@ export default async function AdminHome({
     { label: "Reembolsos", valor: formatBRL(reembolsos) },
     { label: "Cancel./estorno", valor: `${taxaCancelamento.toFixed(0)}%` },
     { label: "Pendentes no período", valor: String(pendentes) },
+    { label: "Frequência de retorno", valor: formatFrequencia(frequenciaMedia) },
     { label: "Novas assinaturas", valor: String(novas.length) },
     { label: "Receita recorrente", valor: formatBRL(recorrente) },
   ];
@@ -320,7 +334,12 @@ export default async function AdminHome({
           cards={[
             { label: "Faturamento total", valor: formatBRL(fatTotal), icon: DollarSign },
             { label: "Atendimentos", valor: String(finalizados.length), icon: CalendarCheck },
-            { label: "Ticket médio", valor: formatBRL(ticket), icon: Receipt },
+            {
+              label: "Ticket médio",
+              valor: formatBRL(ticket),
+              icon: Receipt,
+              sub: `só serviços: ${formatBRL(ticketServicos)}`,
+            },
             { label: "Comissões", valor: formatBRL(comissoes), icon: Percent },
             { label: "Clientes atendidos", valor: String(clientesUnicos), icon: Users },
             { label: "Novos clientes", valor: String(novosClientes.length), icon: UserPlus },

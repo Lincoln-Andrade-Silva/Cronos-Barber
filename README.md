@@ -88,6 +88,13 @@ A marca exibida (login, sidebar, home) vem de `getEstabelecimentoNome()` (`src/l
 - [ ] **Fase 13**: Deploy (Vercel + Supabase + domínio)
 - [ ] **Fase 14**: Checklist de reuso do template
 
-> Menu do admin reorganizado em Visão geral (Dashboard, Relatórios), Operação (Agenda, Vendas, Assinaturas), Gestão (Barbeiros, Cadastros) e Sistema (Configurações).
+> Menu do admin: Visão geral (Dashboard, Relatórios), Operação (Agenda, Vendas, Assinaturas), Financeiro (Fluxo de caixa), Gestão (Funcionários, Cadastros) e Sistema (Configurações).
 
 > Agendamento suporta **múltiplos serviços por marcação**: os serviços viram linhas sequenciais compartilhando um `grupo_id`; finalizar/cancelar/excluir agem no grupo.
+
+## Recursos
+
+- **Bloqueio de cliente**: admin bloqueia um cliente com motivo e prazo opcional (vazio = permanente). Não impede login, mas trava agendar e contratar planos (cancelar plano existente segue liberado); ao tentar, o cliente recebe a mensagem com motivo e prazo. Estado atual em `profiles` (enforcement rápido) + trilha em `bloqueios`.
+- **Finalização de atendimento**: ao finalizar na agenda, um modal permite adicionar serviços extras (cobertura de plano reavaliada), registrar produtos vendidos e escolher o **método de pagamento** (Dinheiro/Pix/Débito/Crédito). Reflete em agenda, vendas, dashboard e relatórios ("Recebimentos por método").
+- **Fluxo de caixa** (`/admin/caixa`): visão consolidada por período — entradas automáticas (serviços finalizados, produtos, assinaturas iniciadas), saídas automáticas (estornos) e **lançamentos manuais** de entrada/saída (despesas, retiradas, aportes) com CRUD, em KPIs de Entradas/Saídas/Saldo.
+- **Média de frequência**: intervalo médio entre visitas dos clientes (a partir dos atendimentos finalizados), exibido na listagem de usuários, no dashboard e no relatório de Atendimentos.

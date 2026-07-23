@@ -6,6 +6,7 @@ import { Ban, History, Pencil, Plus, Power, PowerOff, ShieldCheck, Trash2 } from
 import { Badge, Button, ConfirmModal, DataTableServer, UrlSelect } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { estadoBloqueio } from "@/lib/bloqueio";
+import { formatFrequencia, formatRecencia } from "@/lib/frequencia";
 import { alternarStatusUsuario, desbloquearUsuario, excluirUsuario } from "./actions";
 import { UsuarioModal } from "./usuario-modal";
 import { BloqueioModal } from "./bloqueio-modal";
@@ -21,6 +22,8 @@ export interface UsuarioRow {
   bloqueadoEm: string | null;
   bloqueioDias: number | null;
   bloqueioMotivo: string | null;
+  frequenciaDias: number | null;
+  diasSemRetornar: number | null;
 }
 
 function bloqueioDaRow(u: UsuarioRow) {
@@ -91,6 +94,30 @@ export function UsuariosClient({
       accessorKey: "telefone",
       header: "Telefone",
       cell: ({ getValue }) => <span className="text-muted">{(getValue() as string) || "-"}</span>,
+    },
+    {
+      accessorKey: "frequenciaDias",
+      header: "Frequência",
+      cell: ({ row }) =>
+        row.original.tipo === "cliente" ? (
+          <span className="whitespace-nowrap text-muted">
+            {formatFrequencia(row.original.frequenciaDias)}
+          </span>
+        ) : (
+          <span className="text-muted2">—</span>
+        ),
+    },
+    {
+      accessorKey: "diasSemRetornar",
+      header: "Sem retornar",
+      cell: ({ row }) =>
+        row.original.tipo === "cliente" ? (
+          <span className="whitespace-nowrap text-muted">
+            {formatRecencia(row.original.diasSemRetornar)}
+          </span>
+        ) : (
+          <span className="text-muted2">—</span>
+        ),
     },
     {
       accessorKey: "tipo",

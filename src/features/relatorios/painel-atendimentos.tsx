@@ -1,8 +1,9 @@
 import { and, desc, eq, gte, lt } from "drizzle-orm";
-import { Ban, CalendarCheck, CheckCircle2, Clock, Users } from "lucide-react";
+import { Ban, CalendarCheck, CheckCircle2, Clock, Repeat, Users } from "lucide-react";
 import { db } from "@/db";
-import { agendamentos, barbeiros, profiles, servicos } from "@/db/schema";
+import { agendamentos, barbeiros, profiles, servicos, vendasProdutos } from "@/db/schema";
 import { formatBRL } from "@/lib/format";
+import { formatFrequencia, frequenciaPorCliente, mediaFrequenciaGeral } from "@/lib/frequencia";
 import { diaCurto, gerarDias, spYmd } from "./datas";
 import { RankingExpansivel } from "./ranking-expansivel";
 import { GraficoBarras, KpiGrid, Ranking, Secao, Tabela } from "./ui";
@@ -37,14 +38,27 @@ export async function PainelAtendimentos({
     .where(and(gte(agendamentos.dataHora, inicio), lt(agendamentos.dataHora, fimExclusivo)))
     .orderBy(desc(agendamentos.dataHora));
 
+  const vendasRows = await db
+    .select({ total: vendasProdutos.total })
+    .from(vendasProdutos)
+    .where(and(gte(vendasProdutos.dataHora, inicio), lt(vendasProdutos.dataHora, fimExclusivo)));
+  const fatProdutos = vendasRows.reduce((s, r) => s + Number(r.total), 0);
+
   const finalizados = rows.filter((r) => r.status === "finalizado");
   const cancelados = rows.filter((r) => r.status === "cancelado").length;
   const pendentes = rows.filter((r) => r.status === "agendado").length;
   const taxaCancelamento = rows.length > 0 ? (cancelados / rows.length) * 100 : 0;
   const clientesUnicos = new Set(finalizados.map((r) => r.clienteId)).size;
+  const frequenciaMedia = mediaFrequenciaGeral(
+    frequenciaPorCliente(
+      finalizados
+        .filter((r) => r.clienteId)
+        .map((r) => ({ clienteId: r.clienteId as string, dataHora: r.dataHora })),
+    ),
+  );
   const fatServicos = finalizados.reduce((s, r) => s + Number(r.valor), 0);
   const pagantes = finalizados.filter((r) => r.tipo !== "plano").length;
-  const ticket = pagantes > 0 ? fatServicos / pagantes : 0;
+  const ticket = pagantes > 0 ? (fatServicos + fatProdutos) / pagantes : 0;
 
   const dias = gerarDias(inicio, fimExclusivo);
   const porDia = new Map<string, number>(dias.map((d) => [d, 0]));
@@ -104,6 +118,7 @@ export async function PainelAtendimentos({
           { label: "Pendentes", valor: String(pendentes), icon: Clock },
           { label: "Cancelados", valor: `${cancelados} (${taxaCancelamento.toFixed(0)}%)`, icon: Ban },
           { label: "Clientes atendidos", valor: String(clientesUnicos), icon: Users },
+          { label: "Frequência de retorno", valor: formatFrequencia(frequenciaMedia), icon: Repeat },
           { label: "Ticket médio", valor: formatBRL(ticket), icon: CalendarCheck },
         ]}
       />
