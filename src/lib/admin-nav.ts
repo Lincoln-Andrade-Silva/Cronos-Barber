@@ -7,6 +7,7 @@ import {
   Settings,
   ShoppingCart,
   Users,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 
@@ -38,6 +39,10 @@ export const ADMIN_NAV: AdminNavSection[] = [
       { label: "Vendas", href: "/admin/vendas", icon: ShoppingCart, ready: true },
       { label: "Assinaturas", href: "/admin/assinaturas", icon: CreditCard, ready: true },
     ],
+  },
+  {
+    label: "Financeiro",
+    items: [{ label: "Fluxo de caixa", href: "/admin/caixa", icon: Wallet, ready: true }],
   },
   {
     label: "Gestão",

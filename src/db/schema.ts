@@ -244,3 +244,19 @@ export const vendasProdutos = pgTable("vendas_produtos", {
 });
 
 export type VendaProduto = typeof vendasProdutos.$inferSelect;
+
+// Lançamentos manuais do fluxo de caixa (despesas, retiradas, aportes...). As entradas
+// automáticas (serviços, produtos, assinaturas, estornos) são derivadas na leitura, não gravadas aqui.
+export const movimentacoesCaixa = pgTable("movimentacoes_caixa", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  // "entrada" (dinheiro que entra) ou "saida" (dinheiro que sai).
+  tipo: text("tipo").notNull(),
+  categoria: text("categoria").notNull(),
+  descricao: text("descricao").notNull(),
+  valor: numeric("valor", { precision: 10, scale: 2 }).notNull(),
+  data: timestamp("data", { withTimezone: true }).notNull().defaultNow(),
+  criadoPorId: uuid("criado_por_id"),
+  criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type MovimentacaoCaixa = typeof movimentacoesCaixa.$inferSelect;
