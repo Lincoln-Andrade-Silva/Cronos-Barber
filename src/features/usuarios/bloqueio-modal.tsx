@@ -1,9 +1,16 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Button, Field, FormError, Input, Modal, Textarea } from "@/components/ui";
+import { Button, Field, FormError, Input, Modal, Select, Textarea } from "@/components/ui";
 import { bloquearUsuario } from "./actions";
+import { MOTIVOS_BLOQUEIO } from "./motivos-bloqueio";
 import type { UsuarioRow } from "./usuarios-client";
+
+const OPCOES_MOTIVO = [
+  { value: "", label: "Selecione o motivo" },
+  ...MOTIVOS_BLOQUEIO.map((m) => ({ value: m, label: m })),
+  { value: "outros", label: "Outros" },
+];
 
 export function BloqueioModal({
   usuario,
@@ -12,13 +19,24 @@ export function BloqueioModal({
   usuario: UsuarioRow;
   onClose: () => void;
 }) {
-  const [motivo, setMotivo] = useState("");
+  const [motivoSel, setMotivoSel] = useState("");
+  const [motivoOutro, setMotivoOutro] = useState("");
   const [dias, setDias] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
+  const motivo = motivoSel === "outros" ? motivoOutro.trim() : motivoSel;
+
   function confirmar() {
     setErro(null);
+    if (!motivoSel) {
+      setErro("Selecione o motivo do bloqueio.");
+      return;
+    }
+    if (motivoSel === "outros" && motivo.length < 3) {
+      setErro("Descreva o motivo do bloqueio.");
+      return;
+    }
     const diasNum = dias.trim() === "" ? null : Number(dias);
     startTransition(async () => {
       const res = await bloquearUsuario(usuario.id, motivo, diasNum);
@@ -39,13 +57,16 @@ export function BloqueioModal({
           plano que já tenha.
         </p>
 
-        <Field label="Motivo" htmlFor="bloq-motivo">
-          <Textarea
-            id="bloq-motivo"
-            value={motivo}
-            onChange={(e) => setMotivo(e.target.value)}
-            placeholder="Descreva o motivo do bloqueio"
-          />
+        <Field label="Motivo">
+          <Select value={motivoSel} onChange={setMotivoSel} options={OPCOES_MOTIVO} />
+          {motivoSel === "outros" && (
+            <Textarea
+              className="mt-2"
+              value={motivoOutro}
+              onChange={(e) => setMotivoOutro(e.target.value)}
+              placeholder="Descreva o motivo do bloqueio"
+            />
+          )}
         </Field>
 
         <Field label="Dias de bloqueio" htmlFor="bloq-dias">
