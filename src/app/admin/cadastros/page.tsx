@@ -1,8 +1,9 @@
 import { and, asc, count, eq, ilike, inArray, or, type SQL } from "drizzle-orm";
 import { db } from "@/db";
-import { planoServicos, planos, produtos, profiles, servicos } from "@/db/schema";
+import { agendamentos, planoServicos, planos, produtos, profiles, servicos, vendasProdutos } from "@/db/schema";
 import { PageHeader, UrlTabBar, type TabItem } from "@/components/ui";
 import { getCurrentProfile } from "@/lib/auth";
+import { diasDesde, frequenciaPorCliente, ultimaAtividadePorCliente } from "@/lib/frequencia";
 import { getIntegracaoPagamento } from "@/lib/pagamento";
 import { PAGE_SIZE, offsetDaPagina, parsePagina, totalPaginas } from "@/lib/pagination";
 import { ServicosClient } from "@/features/servicos/servicos-client";
@@ -113,11 +114,37 @@ export default async function CadastrosPage({
         .offset(offset),
       getCurrentProfile(),
     ]);
+
+    // Frequência (intervalo médio entre visitas) e recência (dias sem atividade) dos clientes exibidos.
+    const clienteIds = rows.filter((u) => u.tipo === "cliente").map((u) => u.id);
+    const [visitas, compras] = clienteIds.length
+      ? await Promise.all([
+          db
+            .select({ clienteId: agendamentos.clienteId, dataHora: agendamentos.dataHora })
+            .from(agendamentos)
+            .where(and(eq(agendamentos.status, "finalizado"), inArray(agendamentos.clienteId, clienteIds))),
+          db
+            .select({ clienteId: vendasProdutos.clienteId, dataHora: vendasProdutos.dataHora })
+            .from(vendasProdutos)
+            .where(inArray(vendasProdutos.clienteId, clienteIds)),
+        ])
+      : [[], []];
+    const visitasValidas = visitas.filter(
+      (v): v is { clienteId: string; dataHora: Date } => v.clienteId !== null,
+    );
+    const freq = frequenciaPorCliente(visitasValidas);
+    const atividade = ultimaAtividadePorCliente([
+      ...visitasValidas,
+      ...compras.filter((c): c is { clienteId: string; dataHora: Date } => c.clienteId !== null),
+    ]);
+
     conteudo = (
       <UsuariosClient
         usuarios={rows.map((u) => ({
           ...u,
           bloqueadoEm: u.bloqueadoEm ? u.bloqueadoEm.toISOString() : null,
+          frequenciaDias: freq.get(u.id) ?? null,
+          diasSemRetornar: atividade.has(u.id) ? diasDesde(atividade.get(u.id)!) : null,
         }))}
         usuarioAtualId={atual.id}
         page={pagina}

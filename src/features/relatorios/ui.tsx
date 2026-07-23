@@ -7,18 +7,21 @@ export interface Kpi {
   label: string;
   valor: string;
   icon: LucideIcon;
+  // Balão auxiliar ao lado do valor (ex: recorte "só serviços" do ticket médio).
+  sub?: string;
 }
 
 export function KpiGrid({ cards }: { cards: Kpi[] }) {
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-      {cards.map(({ label, valor, icon: Icon }) => (
+      {cards.map(({ label, valor, icon: Icon, sub }) => (
         <Card key={label} className="p-4">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand/10 text-brand-light">
             <Icon className="h-5 w-5" />
           </span>
           <p className="mt-3 text-xs text-muted">{label}</p>
           <p className="mt-0.5 text-xl font-bold">{valor}</p>
+          {sub && <p className="mt-0.5 text-[11px] text-muted">{sub}</p>}
         </Card>
       ))}
     </div>

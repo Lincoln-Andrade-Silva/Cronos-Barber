@@ -1,5 +1,5 @@
 import { and, desc, eq, gte, lt } from "drizzle-orm";
-import { CreditCard, Receipt, Repeat, UserMinus, UserPlus } from "lucide-react";
+import { CreditCard, Gift, Receipt, Repeat, UserMinus, UserPlus } from "lucide-react";
 import { db } from "@/db";
 import { assinaturas, planos, profiles } from "@/db/schema";
 import { formatBRL } from "@/lib/format";
@@ -19,6 +19,7 @@ export async function PainelAssinaturas({
         clienteNome: profiles.nome,
         planoNome: planos.nome,
         valor: planos.valor,
+        gratuito: assinaturas.gratuito,
         dataInicio: assinaturas.dataInicio,
       })
       .from(assinaturas)
@@ -33,19 +34,23 @@ export async function PainelAssinaturas({
     db.select({ id: assinaturas.id }).from(assinaturas).where(eq(assinaturas.status, "inativo")),
   ]);
 
-  const recorrente = ativas.reduce((s, a) => s + Number(a.valor), 0);
-  const ticket = ativas.length > 0 ? recorrente / ativas.length : 0;
+  // Cortesia (gratuito) não fatura: separa dos pagantes; receita e ticket só dos pagantes.
+  const pagantes = ativas.filter((a) => !a.gratuito);
+  const cortesia = ativas.filter((a) => a.gratuito);
+  const recorrente = pagantes.reduce((s, a) => s + Number(a.valor), 0);
+  const ticket = pagantes.length > 0 ? recorrente / pagantes.length : 0;
 
   const dias = gerarDias(inicio, fimExclusivo);
   const porDia = new Map<string, number>(dias.map((d) => [d, 0]));
   for (const n of novas) porDia.set(spYmd(n.dataInicio), (porDia.get(spYmd(n.dataInicio)) ?? 0) + 1);
   const serie = dias.map((dia) => ({ dia, valor: porDia.get(dia) ?? 0 }));
 
-  const porPlano = new Map<string, { qtd: number; receita: number }>();
+  const porPlano = new Map<string, { qtd: number; receita: number; cortesia: number }>();
   for (const a of ativas) {
-    const p = porPlano.get(a.planoNome) ?? { qtd: 0, receita: 0 };
+    const p = porPlano.get(a.planoNome) ?? { qtd: 0, receita: 0, cortesia: 0 };
     p.qtd += 1;
-    p.receita += Number(a.valor);
+    if (a.gratuito) p.cortesia += 1;
+    else p.receita += Number(a.valor);
     porPlano.set(a.planoNome, p);
   }
   const planosRank = [...porPlano.entries()].sort((a, b) => b[1].qtd - a[1].qtd);
@@ -55,9 +60,15 @@ export async function PainelAssinaturas({
     <div className="space-y-6">
       <KpiGrid
         cards={[
-          { label: "Assinaturas ativas", valor: String(ativas.length), icon: CreditCard },
+          {
+            label: "Assinaturas ativas",
+            valor: String(ativas.length),
+            icon: CreditCard,
+            sub: `${pagantes.length} pagantes · ${cortesia.length} cortesia`,
+          },
           { label: "Receita recorrente", valor: formatBRL(recorrente), icon: Repeat },
           { label: "Ticket médio", valor: formatBRL(ticket), icon: Receipt },
+          { label: "Cortesia (ativas)", valor: String(cortesia.length), icon: Gift },
           { label: "Novas no período", valor: String(novas.length), icon: UserPlus },
           { label: "Inativas", valor: String(inativas.length), icon: UserMinus },
         ]}
@@ -73,7 +84,10 @@ export async function PainelAssinaturas({
           itens={planosRank.map(([nome, v]) => ({
             nome,
             destaque: `${v.qtd}`,
-            sub: `${formatBRL(v.receita)}/mês`,
+            sub:
+              v.cortesia > 0
+                ? `${formatBRL(v.receita)}/mês · ${v.cortesia} cortesia`
+                : `${formatBRL(v.receita)}/mês`,
             proporcao: (v.qtd / maxPlano) * 100,
           }))}
         />
@@ -86,7 +100,7 @@ export async function PainelAssinaturas({
             a.clienteNome,
             a.planoNome,
             diaCurto(spYmd(a.dataInicio)),
-            formatBRL(a.valor),
+            a.gratuito ? "Cortesia" : formatBRL(a.valor),
           ])}
           vazio="Nenhuma assinatura ativa."
         />
