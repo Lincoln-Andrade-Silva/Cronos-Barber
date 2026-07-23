@@ -9,11 +9,11 @@ import {
   cancelarAgendamentoAdmin,
   estornarAgendamentoAdmin,
   excluirAgendamento,
-  finalizarAgendamento,
 } from "./actions";
+import { FinalizarModal, type ProdutoOpcao, type ServicoOpcao } from "./finalizar-modal";
 
 type StatusAg = "agendado" | "finalizado" | "cancelado" | "estornado";
-type TipoAcao = "finalizar" | "cancelar" | "estornar" | "excluir";
+type TipoAcao = "cancelar" | "estornar" | "excluir";
 type FormaPagamento = "presencial" | "online";
 
 export interface AgendaItem {
@@ -153,7 +153,6 @@ const acaoBtn =
   "inline-flex h-6 w-6 items-center justify-center rounded-md border border-line bg-panel text-muted transition disabled:opacity-50";
 
 const TEXTOS: Record<TipoAcao, { titulo: string; verbo: string; label: string }> = {
-  finalizar: { titulo: "Finalizar atendimento", verbo: "finalizar", label: "Finalizar" },
   cancelar: { titulo: "Cancelar agendamento", verbo: "cancelar", label: "Cancelar" },
   estornar: { titulo: "Estornar atendimento", verbo: "estornar", label: "Estornar" },
   excluir: { titulo: "Excluir agendamento", verbo: "excluir", label: "Excluir" },
@@ -180,12 +179,17 @@ export function AgendaLista({
   items,
   barbeiroNome,
   barbeiroFotoUrl,
+  servicos,
+  produtos,
 }: {
   items: AgendaItem[];
   barbeiroNome?: string;
   barbeiroFotoUrl?: string | null;
+  servicos: ServicoOpcao[];
+  produtos: ProdutoOpcao[];
 }) {
   const [acao, setAcao] = useState<{ bloco: Bloco; tipo: TipoAcao } | null>(null);
+  const [finalizar, setFinalizar] = useState<Bloco | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -195,8 +199,7 @@ export function AgendaLista({
     setErro(null);
     startTransition(async () => {
       let res: { error?: string };
-      if (tipo === "finalizar") res = await finalizarAgendamento(bloco.id);
-      else if (tipo === "cancelar") res = await cancelarAgendamentoAdmin(bloco.id);
+      if (tipo === "cancelar") res = await cancelarAgendamentoAdmin(bloco.id);
       else if (tipo === "estornar") res = await estornarAgendamentoAdmin(bloco.id);
       else res = await excluirAgendamento(bloco.id);
       if (res.error) setErro(res.error);
@@ -329,7 +332,7 @@ export function AgendaLista({
                           type="button"
                           title="Finalizar"
                           disabled={pending}
-                          onClick={() => setAcao({ bloco, tipo: "finalizar" })}
+                          onClick={() => setFinalizar(bloco)}
                           className={cn(acaoBtn, "hover:border-emerald-500/40 hover:text-emerald-400")}
                         >
                           <Check className="h-3.5 w-3.5" />
@@ -374,6 +377,22 @@ export function AgendaLista({
           </div>
         </div>
       </div>
+
+      {finalizar && (
+        <FinalizarModal
+          key={finalizar.id}
+          bloco={{
+            id: finalizar.id,
+            clienteNome: finalizar.clienteNome,
+            valorTotal: finalizar.valorTotal,
+            servicos: finalizar.servicos.map((s) => ({ nome: s.nome, valor: s.valor })),
+          }}
+          servicos={servicos}
+          produtos={produtos}
+          onClose={() => setFinalizar(null)}
+          onFinalizado={() => setFinalizar(null)}
+        />
+      )}
 
       <ConfirmModal
         open={!!acao}

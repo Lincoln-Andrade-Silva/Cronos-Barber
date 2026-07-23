@@ -22,6 +22,7 @@ import {
 import { Card, PageHeader } from "@/components/ui";
 import { instanteSlot } from "@/lib/disponibilidade";
 import { formatBRL } from "@/lib/format";
+import { METODOS_PAGAMENTO, rotuloMetodo } from "@/lib/metodo-pagamento";
 import { diasAtras, gerarDias, hojeSP, spYmd } from "@/features/relatorios/datas";
 import { PeriodoNav } from "@/features/relatorios/periodo-nav";
 import { GraficoBarras, KpiGrid, Ranking, Secao, Tabela } from "@/features/relatorios/ui";
@@ -49,6 +50,7 @@ export default async function AdminHome({
         tipo: agendamentos.tipo,
         formaPagamento: agendamentos.formaPagamento,
         pagamentoStatus: agendamentos.pagamentoStatus,
+        metodoPagamento: agendamentos.metodoPagamento,
         clienteId: agendamentos.clienteId,
         barbeiroId: agendamentos.barbeiroId,
         barbeiroNome: barbeiros.nome,
@@ -66,6 +68,7 @@ export default async function AdminHome({
         produtoNome: produtos.nome,
         quantidade: vendasProdutos.quantidade,
         total: vendasProdutos.total,
+        metodoPagamento: vendasProdutos.metodoPagamento,
       })
       .from(vendasProdutos)
       .innerJoin(produtos, eq(vendasProdutos.produtoId, produtos.id))
@@ -276,6 +279,22 @@ export default async function AdminHome({
   const produtosRank = [...porProduto.entries()].sort((a, b) => b[1].qtd - a[1].qtd).slice(0, 6);
   const maxProduto = Math.max(1, ...produtosRank.map(([, v]) => v.qtd));
 
+  // Recebimentos por método (balcão): serviços presenciais finalizados + produtos vendidos.
+  const recebPorMetodo = new Map<string, number>();
+  for (const r of finalizados) {
+    if (r.formaPagamento === "online" || Number(r.valor) <= 0) continue;
+    const k = r.metodoPagamento ?? "nao_informado";
+    recebPorMetodo.set(k, (recebPorMetodo.get(k) ?? 0) + Number(r.valor));
+  }
+  for (const v of vendas) {
+    const k = v.metodoPagamento ?? "nao_informado";
+    recebPorMetodo.set(k, (recebPorMetodo.get(k) ?? 0) + Number(v.total));
+  }
+  const metodoItens = [...METODOS_PAGAMENTO, "nao_informado"]
+    .filter((k) => (recebPorMetodo.get(k) ?? 0) > 0)
+    .map((k) => ({ chave: k, total: recebPorMetodo.get(k) ?? 0 }));
+  const maxMetodo = Math.max(1, ...metodoItens.map((m) => m.total));
+
   const maxComposicao = Math.max(1, fatServicos, fatProdutos, recorrente);
 
   const indicadores = [
@@ -352,6 +371,17 @@ export default async function AdminHome({
                 : []),
             ]}
             vazio="Sem recebimentos no período."
+          />
+        </Secao>
+
+        <Secao titulo="Recebimentos por método (balcão)">
+          <Ranking
+            vazio="Nenhum recebimento presencial no período."
+            itens={metodoItens.map((m) => ({
+              nome: rotuloMetodo(m.chave === "nao_informado" ? null : m.chave),
+              destaque: formatBRL(m.total),
+              proporcao: (m.total / maxMetodo) * 100,
+            }))}
           />
         </Secao>
 

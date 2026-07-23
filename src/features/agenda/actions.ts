@@ -3,9 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { and, eq, gte, inArray, lt, ne } from "drizzle-orm";
 import { db } from "@/db";
-import { agendamentos, servicos } from "@/db/schema";
+import { agendamentos, produtos, servicos, vendasProdutos } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth";
 import { instanteSlot } from "@/lib/disponibilidade";
+import { isMetodoPagamento } from "@/lib/metodo-pagamento";
 import { servicoCobertoPorPlano } from "@/lib/plano";
 import { estornarAgendamento } from "@/features/agendamento/pagamento";
 
@@ -24,25 +25,177 @@ async function idsAlvo(id: string): Promise<string[]> {
   return linhas.map((l) => l.id);
 }
 
-export async function finalizarAgendamento(id: string): Promise<{ error?: string }> {
+/**
+ * Dentre os serviços informados, quais estão cobertos pelo plano do cliente do bloco
+ * na data do atendimento (respeitando dia da semana e limite). Vazio se cliente avulso.
+ */
+export async function getCoberturaBloco(id: string, servicoIds: string[]): Promise<string[]> {
   await requireAdmin();
-  const ids = await idsAlvo(id);
+  const [row] = await db
+    .select({ clienteId: agendamentos.clienteId, dataHora: agendamentos.dataHora })
+    .from(agendamentos)
+    .where(eq(agendamentos.id, id));
+  if (!row?.clienteId) return [];
+
+  const dataYmd = row.dataHora.toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
+  const cobertos: string[] = [];
+  for (const servicoId of servicoIds) {
+    if (await servicoCobertoPorPlano(row.clienteId, servicoId, dataYmd, row.dataHora)) {
+      cobertos.push(servicoId);
+    }
+  }
+  return cobertos;
+}
+
+export interface ProdutoVendido {
+  produtoId: string;
+  quantidade: number;
+}
+
+export interface FinalizarAtendimentoInput {
+  id: string;
+  metodoPagamento?: string | null;
+  servicoIdsExtras: string[];
+  produtos: ProdutoVendido[];
+}
+
+/**
+ * Finaliza um atendimento de balcão, opcionalmente adicionando serviços extras (no mesmo
+ * grupo, com cobertura de plano reavaliada), produtos vendidos e o método de recebimento.
+ */
+export async function finalizarAtendimento(
+  input: FinalizarAtendimentoInput,
+): Promise<{ error?: string }> {
+  await requireAdmin();
+  const ids = await idsAlvo(input.id);
   if (ids.length === 0) return {};
 
-  // Não finaliza enquanto o pagamento online não foi concluído.
-  const linhas = await db
-    .select({ formaPagamento: agendamentos.formaPagamento, pagamentoStatus: agendamentos.pagamentoStatus })
-    .from(agendamentos)
-    .where(inArray(agendamentos.id, ids));
-  const aguardando = linhas.some(
+  const linhasBloco = await db.select().from(agendamentos).where(inArray(agendamentos.id, ids));
+  const aguardando = linhasBloco.some(
     (l) => l.formaPagamento === "online" && l.pagamentoStatus === "pendente",
   );
   if (aguardando) {
     return { error: "Pagamento online pendente: conclua o pagamento ou cancele o agendamento." };
   }
 
-  await db.update(agendamentos).set({ status: "finalizado" }).where(inArray(agendamentos.id, ids));
+  const base = linhasBloco[0];
+  const metodo = isMetodoPagamento(input.metodoPagamento) ? input.metodoPagamento : null;
+  const extrasIds = input.servicoIdsExtras ?? [];
+  const produtosVendidos = input.produtos ?? [];
+
+  for (const p of produtosVendidos) {
+    if (!Number.isInteger(p.quantidade) || p.quantidade < 1) {
+      return { error: "Quantidade de produto inválida." };
+    }
+  }
+
+  const servsExtra = extrasIds.length
+    ? await db.select().from(servicos).where(inArray(servicos.id, extrasIds))
+    : [];
+  if (servsExtra.length !== new Set(extrasIds).size) return { error: "Serviço não encontrado." };
+
+  const produtosData = produtosVendidos.length
+    ? await db.select().from(produtos).where(inArray(produtos.id, produtosVendidos.map((p) => p.produtoId)))
+    : [];
+  if (produtosData.length !== new Set(produtosVendidos.map((p) => p.produtoId)).size) {
+    return { error: "Produto não encontrado." };
+  }
+
+  const dataYmd = base.dataHora.toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
+
+  // Serviços extras: reavalia cobertura do plano (grátis se coberto, senão avulso).
+  const linhasExtra: {
+    clienteId: string | null;
+    clienteAvulso: string | null;
+    barbeiroId: string;
+    servicoId: string;
+    dataHora: Date;
+    valor: string;
+    tipo: "plano" | "avulso";
+    status: "finalizado";
+  }[] = [];
+  let extrasPagavel = 0;
+  for (const id of extrasIds) {
+    const servico = servsExtra.find((s) => s.id === id);
+    if (!servico) return { error: "Serviço não encontrado." };
+    const coberto = base.clienteId
+      ? await servicoCobertoPorPlano(base.clienteId, servico.id, dataYmd, base.dataHora)
+      : false;
+    if (!coberto) extrasPagavel += Number(servico.preco);
+    linhasExtra.push({
+      clienteId: base.clienteId,
+      clienteAvulso: base.clienteAvulso,
+      barbeiroId: base.barbeiroId,
+      servicoId: servico.id,
+      dataHora: base.dataHora,
+      valor: coberto ? "0" : servico.preco,
+      tipo: coberto ? ("plano" as const) : ("avulso" as const),
+      status: "finalizado" as const,
+    });
+  }
+
+  const linhasProduto = produtosVendidos.map((p) => {
+    const produto = produtosData.find((x) => x.id === p.produtoId)!;
+    const unit = Number(produto.valor);
+    return {
+      produtoId: produto.id,
+      quantidade: p.quantidade,
+      valorUnitario: unit.toFixed(2),
+      total: (unit * p.quantidade).toFixed(2),
+      barbeiroId: base.barbeiroId,
+      clienteId: base.clienteId,
+      clienteAvulso: base.clienteAvulso,
+      metodoPagamento: metodo,
+    };
+  });
+
+  // Valor a receber no balcão: bloco presencial avulso + extras avulsos + produtos.
+  const blocoPagavel = linhasBloco
+    .filter((l) => l.tipo !== "plano" && l.formaPagamento !== "online")
+    .reduce((s, l) => s + Number(l.valor), 0);
+  const produtosTotal = linhasProduto.reduce((s, l) => s + Number(l.total), 0);
+  const totalReceber = blocoPagavel + extrasPagavel + produtosTotal;
+  if (totalReceber > 0 && !metodo) {
+    return { error: "Selecione o método de pagamento." };
+  }
+
+  // Se vai adicionar extras a um bloco de serviço único, cria um grupo para mantê-los juntos.
+  const novoGrupoId = !base.grupoId && linhasExtra.length > 0 ? crypto.randomUUID() : null;
+  const grupoId = base.grupoId ?? novoGrupoId;
+
+  try {
+    await db.transaction(async (tx) => {
+      if (novoGrupoId) {
+        await tx.update(agendamentos).set({ grupoId: novoGrupoId }).where(inArray(agendamentos.id, ids));
+      }
+      await tx.update(agendamentos).set({ status: "finalizado" }).where(inArray(agendamentos.id, ids));
+      if (metodo) {
+        // Método só no presencial; o online já foi liquidado no cartão.
+        await tx
+          .update(agendamentos)
+          .set({ metodoPagamento: metodo })
+          .where(and(inArray(agendamentos.id, ids), eq(agendamentos.formaPagamento, "presencial")));
+      }
+      if (linhasExtra.length > 0) {
+        await tx.insert(agendamentos).values(
+          linhasExtra.map((l) => ({
+            ...l,
+            grupoId,
+            metodoPagamento: l.tipo === "avulso" ? metodo : null,
+          })),
+        );
+      }
+      if (linhasProduto.length > 0) {
+        await tx.insert(vendasProdutos).values(linhasProduto);
+      }
+    });
+  } catch (err) {
+    console.error("Falha ao finalizar atendimento:", err);
+    return { error: "Não foi possível finalizar. Tente novamente." };
+  }
+
   revalidatePath("/admin/agenda");
+  revalidatePath("/admin/vendas");
   return {};
 }
 

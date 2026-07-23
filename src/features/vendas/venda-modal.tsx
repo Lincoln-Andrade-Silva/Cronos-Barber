@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Button, Field, FormError, Input, Modal, Select } from "@/components/ui";
+import { Button, Field, FormError, Input, Modal, Segmented, Select } from "@/components/ui";
 import { formatBRL } from "@/lib/format";
+import { METODO_OPCOES, type MetodoPagamento } from "@/lib/metodo-pagamento";
 import { registrarVenda } from "./actions";
 
 export interface OpcaoProduto {
@@ -32,6 +33,7 @@ export function VendaModal({
   const [barbeiroId, setBarbeiroId] = useState("");
   const [clienteId, setClienteId] = useState("");
   const [clienteAvulso, setClienteAvulso] = useState("");
+  const [metodo, setMetodo] = useState<MetodoPagamento>("dinheiro");
   const [erro, setErro] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -52,6 +54,7 @@ export function VendaModal({
         barbeiroId,
         clienteId || null,
         clienteAvulso,
+        metodo,
       );
       if (res.error) {
         setErro(res.error);
@@ -114,6 +117,10 @@ export function VendaModal({
               placeholder="Nome do cliente (opcional)"
             />
           )}
+        </Field>
+
+        <Field label="Método de pagamento">
+          <Segmented options={METODO_OPCOES} value={metodo} onChange={setMetodo} />
         </Field>
 
         {erro && <FormError>{erro}</FormError>}

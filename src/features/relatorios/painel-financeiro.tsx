@@ -3,6 +3,7 @@ import { DollarSign, Receipt, Repeat, Scissors, ShoppingBag, Undo2 } from "lucid
 import { db } from "@/db";
 import { agendamentos, assinaturas, barbeiros, planos, produtos, servicos, vendasProdutos } from "@/db/schema";
 import { formatBRL } from "@/lib/format";
+import { METODOS_PAGAMENTO, rotuloMetodo } from "@/lib/metodo-pagamento";
 import { diaCurto, gerarDias, spYmd } from "./datas";
 import { RankingExpansivel } from "./ranking-expansivel";
 import { GraficoBarras, KpiGrid, Ranking, Secao, Tabela } from "./ui";
@@ -21,6 +22,7 @@ export async function PainelFinanceiro({
         valor: agendamentos.valor,
         tipo: agendamentos.tipo,
         formaPagamento: agendamentos.formaPagamento,
+        metodoPagamento: agendamentos.metodoPagamento,
         barbeiroId: agendamentos.barbeiroId,
         barbeiroNome: barbeiros.nome,
         barbeiroFoto: barbeiros.fotoUrl,
@@ -37,7 +39,11 @@ export async function PainelFinanceiro({
         ),
       ),
     db
-      .select({ dataHora: vendasProdutos.dataHora, total: vendasProdutos.total })
+      .select({
+        dataHora: vendasProdutos.dataHora,
+        total: vendasProdutos.total,
+        metodoPagamento: vendasProdutos.metodoPagamento,
+      })
       .from(vendasProdutos)
       .where(and(gte(vendasProdutos.dataHora, inicio), lt(vendasProdutos.dataHora, fimExclusivo))),
     db
@@ -83,6 +89,22 @@ export async function PainelFinanceiro({
   const reembolsosMP = estornadosRows
     .filter((r) => r.formaPagamento === "online")
     .reduce((s, r) => s + Number(r.valor), 0);
+
+  // Recebimentos por método (balcão): serviços presenciais finalizados + produtos vendidos.
+  const recebPorMetodo = new Map<string, number>();
+  for (const r of finalizados) {
+    if (r.formaPagamento === "online" || Number(r.valor) <= 0) continue;
+    const k = r.metodoPagamento ?? "nao_informado";
+    recebPorMetodo.set(k, (recebPorMetodo.get(k) ?? 0) + Number(r.valor));
+  }
+  for (const v of vendas) {
+    const k = v.metodoPagamento ?? "nao_informado";
+    recebPorMetodo.set(k, (recebPorMetodo.get(k) ?? 0) + Number(v.total));
+  }
+  const metodoItens = [...METODOS_PAGAMENTO, "nao_informado"]
+    .filter((k) => (recebPorMetodo.get(k) ?? 0) > 0)
+    .map((k) => ({ chave: k, total: recebPorMetodo.get(k) ?? 0 }));
+  const maxMetodo = Math.max(1, ...metodoItens.map((m) => m.total));
 
   const dias = gerarDias(inicio, fimExclusivo);
   const serv = new Map<string, number>(dias.map((d) => [d, 0]));
@@ -183,6 +205,17 @@ export async function PainelFinanceiro({
               : []),
           ]}
           vazio="Sem recebimentos no período."
+        />
+      </Secao>
+
+      <Secao titulo="Recebimentos por método (balcão)">
+        <Ranking
+          vazio="Nenhum recebimento presencial no período."
+          itens={metodoItens.map((m) => ({
+            nome: rotuloMetodo(m.chave === "nao_informado" ? null : m.chave),
+            destaque: formatBRL(m.total),
+            proporcao: (m.total / maxMetodo) * 100,
+          }))}
         />
       </Secao>
 

@@ -3,9 +3,10 @@
 import { useState, useTransition } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Plus, Trash2 } from "lucide-react";
-import { Button, ConfirmModal, DataTableServer, UrlSelect } from "@/components/ui";
+import { Badge, Button, ConfirmModal, DataTableServer, UrlSelect } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { formatBRL } from "@/lib/format";
+import { rotuloMetodo } from "@/lib/metodo-pagamento";
 import { excluirVenda } from "./actions";
 import { VendaModal, type Opcao, type OpcaoProduto } from "./venda-modal";
 
@@ -19,6 +20,7 @@ export interface VendaRow {
   barbeiroId: string;
   barbeiroNome: string;
   clienteNome: string | null;
+  metodoPagamento: string | null;
 }
 
 const iconBtn =
@@ -94,6 +96,13 @@ export function VendasClient({
       header: "Cliente",
       cell: ({ getValue }) => (
         <span className="text-muted">{(getValue() as string | null) ?? "-"}</span>
+      ),
+    },
+    {
+      accessorKey: "metodoPagamento",
+      header: "Forma",
+      cell: ({ getValue }) => (
+        <Badge tone="muted">{rotuloMetodo(getValue() as string | null)}</Badge>
       ),
     },
     {

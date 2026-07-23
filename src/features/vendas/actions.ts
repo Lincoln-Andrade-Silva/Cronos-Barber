@@ -6,6 +6,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { produtos, vendasProdutos } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth";
+import { METODOS_PAGAMENTO } from "@/lib/metodo-pagamento";
 
 export async function excluirVenda(id: string): Promise<void> {
   await requireAdmin();
@@ -23,6 +24,7 @@ const schema = z.object({
   quantidade: z.coerce.number().int().min(1, "Quantidade mínima é 1.").max(999),
   barbeiroId: z.string().uuid("Selecione um profissional."),
   clienteId: z.string().uuid().nullable(),
+  metodoPagamento: z.enum(METODOS_PAGAMENTO, { message: "Selecione o método de pagamento." }),
 });
 
 export async function registrarVenda(
@@ -30,7 +32,8 @@ export async function registrarVenda(
   quantidade: number,
   barbeiroId: string,
   clienteId: string | null,
-  clienteAvulso?: string,
+  clienteAvulso: string | undefined,
+  metodoPagamento: string,
 ): Promise<VendaFormState> {
   await requireAdmin();
 
@@ -39,6 +42,7 @@ export async function registrarVenda(
     quantidade,
     barbeiroId,
     clienteId: clienteId || null,
+    metodoPagamento,
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Dados inválidos." };
@@ -62,6 +66,7 @@ export async function registrarVenda(
       barbeiroId: dados.barbeiroId,
       clienteId: dados.clienteId,
       clienteAvulso: nomeAvulso,
+      metodoPagamento: dados.metodoPagamento,
     });
   } catch (err) {
     console.error("Falha ao registrar venda:", err);

@@ -159,6 +159,8 @@ export const agendamentos = pgTable("agendamentos", {
   // Situação do pagamento: "a_receber" (presencial pendente), "pendente" (checkout iniciado),
   // "pago" (aprovado no gateway) ou "estornado" (devolvido).
   pagamentoStatus: text("pagamento_status").notNull().default("a_receber"),
+  // Instrumento do recebimento presencial: dinheiro/pix/debito/credito. Null = não informado ou online.
+  metodoPagamento: text("metodo_pagamento"),
   // Id do pagamento no Mercado Pago (necessário para estorno). Null quando presencial.
   gatewayPagamentoId: text("gateway_pagamento_id"),
   criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
@@ -236,6 +238,8 @@ export const vendasProdutos = pgTable("vendas_produtos", {
   barbeiroId: uuid("barbeiro_id").notNull(),
   clienteId: uuid("cliente_id"),
   clienteAvulso: text("cliente_avulso"),
+  // Instrumento do recebimento: dinheiro/pix/debito/credito. Null = não informado.
+  metodoPagamento: text("metodo_pagamento"),
   dataHora: timestamp("data_hora", { withTimezone: true }).notNull().defaultNow(),
 });
 

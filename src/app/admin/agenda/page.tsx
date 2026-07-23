@@ -1,7 +1,7 @@
 import { and, asc, eq, gte, lt } from "drizzle-orm";
 import { Ban, CalendarCheck, CheckCircle2, DollarSign, CreditCard, Hourglass } from "lucide-react";
 import { db } from "@/db";
-import { agendamentos, barbeiros, profiles, servicos } from "@/db/schema";
+import { agendamentos, barbeiros, produtos, profiles, servicos } from "@/db/schema";
 import { Card, PageHeader } from "@/components/ui";
 import { instanteSlot } from "@/lib/disponibilidade";
 import { formatBRL } from "@/lib/format";
@@ -25,7 +25,7 @@ export default async function AgendaPage({
   const inicioTs = instanteSlot(data, "00:00");
   const fimTs = new Date(inicioTs.getTime() + 24 * 60 * 60 * 1000);
 
-  const [rows, listaBarbeiros, listaServicos, listaClientes] = await Promise.all([
+  const [rows, listaBarbeiros, listaServicos, listaClientes, listaProdutos] = await Promise.all([
     db
       .select({
         id: agendamentos.id,
@@ -62,6 +62,11 @@ export default async function AgendaPage({
       .from(profiles)
       .where(eq(profiles.tipo, "cliente"))
       .orderBy(asc(profiles.nome)),
+    db
+      .select({ id: produtos.id, nome: produtos.nome, valor: produtos.valor })
+      .from(produtos)
+      .where(eq(produtos.status, "ativo"))
+      .orderBy(asc(produtos.nome)),
   ]);
 
   const barbeiroSel = searchParams.barbeiro ?? listaBarbeiros[0]?.id ?? "";
@@ -146,6 +151,8 @@ export default async function AgendaPage({
         items={items}
         barbeiroNome={barbeiroAtivo?.nome}
         barbeiroFotoUrl={barbeiroAtivo?.fotoUrl}
+        servicos={listaServicos}
+        produtos={listaProdutos}
       />
     </div>
   );
