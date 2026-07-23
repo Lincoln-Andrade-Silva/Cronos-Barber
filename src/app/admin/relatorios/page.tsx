@@ -7,6 +7,7 @@ import { PainelAtendimentos } from "@/features/relatorios/painel-atendimentos";
 import { PainelComissoes } from "@/features/relatorios/painel-comissoes";
 import { PainelAssinaturas } from "@/features/relatorios/painel-assinaturas";
 import { PainelProdutos } from "@/features/relatorios/painel-produtos";
+import { PainelBloqueios } from "@/features/relatorios/painel-bloqueios";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ const TABS = [
   { key: "comissoes", label: "Comissões", ready: true },
   { key: "assinaturas", label: "Assinaturas", ready: true },
   { key: "produtos", label: "Produtos", ready: true },
+  { key: "bloqueios", label: "Bloqueios", ready: true },
 ] as const satisfies readonly TabItem[];
 
 export default async function RelatoriosPage({
@@ -34,6 +36,7 @@ export default async function RelatoriosPage({
   else if (tab === "comissoes") painel = <PainelComissoes inicio={inicio} fimExclusivo={fimExclusivo} />;
   else if (tab === "assinaturas") painel = <PainelAssinaturas inicio={inicio} fimExclusivo={fimExclusivo} />;
   else if (tab === "produtos") painel = <PainelProdutos inicio={inicio} fimExclusivo={fimExclusivo} />;
+  else if (tab === "bloqueios") painel = <PainelBloqueios inicio={inicio} fimExclusivo={fimExclusivo} />;
   else painel = <PainelFinanceiro inicio={inicio} fimExclusivo={fimExclusivo} />;
 
   return (

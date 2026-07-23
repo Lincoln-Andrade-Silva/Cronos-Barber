@@ -1,14 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { and, desc, eq, isNull } from "drizzle-orm";
-import { alias } from "drizzle-orm/pg-core";
+import { and, eq, isNull } from "drizzle-orm";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { db } from "@/db";
 import { bloqueios, profiles } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth";
-import { estadoBloqueio } from "@/lib/bloqueio";
 import { getServiceRoleKey, getSupabaseUrl } from "@/lib/supabase/config";
 
 export interface UsuarioFormState {
@@ -211,66 +209,6 @@ export async function desbloquearUsuario(id: string): Promise<void> {
       .where(eq(profiles.id, id));
   });
   revalidatePath("/admin/cadastros");
-}
-
-export type BloqueioStatus = "ativo" | "expirado" | "revogado";
-
-export interface BloqueioHistoricoItem {
-  id: string;
-  motivo: string;
-  bloqueadoEm: string;
-  fim: string | null;
-  status: BloqueioStatus;
-  criadoPorNome: string | null;
-}
-
-/** Trilha de bloqueios de um usuário, mais recente primeiro. */
-export async function historicoBloqueios(usuarioId: string): Promise<BloqueioHistoricoItem[]> {
-  await requireAdmin();
-
-  const autor = alias(profiles, "autor");
-  const linhas = await db
-    .select({
-      id: bloqueios.id,
-      motivo: bloqueios.motivo,
-      dias: bloqueios.dias,
-      bloqueadoEm: bloqueios.bloqueadoEm,
-      desbloqueadoEm: bloqueios.desbloqueadoEm,
-      criadoPorNome: autor.nome,
-    })
-    .from(bloqueios)
-    .leftJoin(autor, eq(bloqueios.criadoPorId, autor.id))
-    .where(eq(bloqueios.usuarioId, usuarioId))
-    .orderBy(desc(bloqueios.bloqueadoEm));
-
-  return linhas.map((l) => {
-    const vigente = estadoBloqueio({
-      bloqueadoEm: l.bloqueadoEm,
-      bloqueioDias: l.dias,
-      bloqueioMotivo: l.motivo,
-    });
-    let status: BloqueioStatus;
-    let fim: Date | null;
-    if (l.desbloqueadoEm) {
-      status = "revogado";
-      fim = l.desbloqueadoEm;
-    } else if (vigente.ativo) {
-      status = "ativo";
-      fim = vigente.ate;
-    } else {
-      status = "expirado";
-      fim = vigente.ate; // estadoBloqueio zera `ate` ao expirar; recalcula abaixo se houver prazo
-      if (l.dias != null) fim = new Date(l.bloqueadoEm.getTime() + l.dias * 24 * 60 * 60 * 1000);
-    }
-    return {
-      id: l.id,
-      motivo: l.motivo,
-      bloqueadoEm: l.bloqueadoEm.toISOString(),
-      fim: fim ? fim.toISOString() : null,
-      status,
-      criadoPorNome: l.criadoPorNome ?? null,
-    };
-  });
 }
 
 export async function excluirUsuario(id: string): Promise<void> {

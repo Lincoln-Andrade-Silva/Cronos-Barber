@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
-import { Ban, History, Pencil, Plus, Power, PowerOff, ShieldCheck, Trash2 } from "lucide-react";
+import { Ban, Pencil, Plus, Power, PowerOff, ShieldCheck, Trash2 } from "lucide-react";
 import { Badge, Button, ConfirmModal, DataTableServer, UrlSelect } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { estadoBloqueio } from "@/lib/bloqueio";
@@ -10,7 +10,6 @@ import { formatFrequencia, formatRecencia } from "@/lib/frequencia";
 import { alternarStatusUsuario, desbloquearUsuario, excluirUsuario } from "./actions";
 import { UsuarioModal } from "./usuario-modal";
 import { BloqueioModal } from "./bloqueio-modal";
-import { HistoricoModal } from "./historico-modal";
 
 export interface UsuarioRow {
   id: string;
@@ -52,7 +51,6 @@ export function UsuariosClient({
   const [excluir, setExcluir] = useState<UsuarioRow | null>(null);
   const [bloquear, setBloquear] = useState<UsuarioRow | null>(null);
   const [desbloquear, setDesbloquear] = useState<UsuarioRow | null>(null);
-  const [historico, setHistorico] = useState<UsuarioRow | null>(null);
   const [pending, startTransition] = useTransition();
 
   function toggleStatus(u: UsuarioRow) {
@@ -162,16 +160,6 @@ export function UsuariosClient({
             <button type="button" title="Editar" onClick={() => setModal({ usuario: u })} className={iconBtn}>
               <Pencil className="h-4 w-4" />
             </button>
-            {u.tipo === "cliente" && (
-              <button
-                type="button"
-                title="Histórico de bloqueios"
-                onClick={() => setHistorico(u)}
-                className={iconBtn}
-              >
-                <History className="h-4 w-4" />
-              </button>
-            )}
             {u.tipo === "cliente" &&
               !ehVoce &&
               (bloqueado ? (
@@ -262,14 +250,6 @@ export function UsuariosClient({
           key={bloquear.id}
           usuario={bloquear}
           onClose={() => setBloquear(null)}
-        />
-      )}
-
-      {historico && (
-        <HistoricoModal
-          key={historico.id}
-          usuario={historico}
-          onClose={() => setHistorico(null)}
         />
       )}
 
