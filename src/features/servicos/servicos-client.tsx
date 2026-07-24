@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { Badge, Button, ConfirmModal, DataTableServer, UrlSelect } from "@/components/ui";
-import type { Servico } from "@/db/schema";
+import type { Categoria, Servico } from "@/db/schema";
 import { cn } from "@/lib/cn";
 import { formatBRL, formatDuracao } from "@/lib/format";
 import { excluirServico } from "./actions";
@@ -15,15 +15,18 @@ const iconBtn =
 
 export function ServicosClient({
   servicos,
+  categorias,
   taxaCartao,
   page,
   pageCount,
 }: {
   servicos: Servico[];
+  categorias: Categoria[];
   taxaCartao: number;
   page: number;
   pageCount: number;
 }) {
+  const nomeCategoria = new Map(categorias.map((c) => [c.id, c.nome]));
   const [modal, setModal] = useState<{ servico: Servico | null } | null>(null);
   const [excluir, setExcluir] = useState<Servico | null>(null);
   const [pending, startTransition] = useTransition();
@@ -42,6 +45,18 @@ export function ServicosClient({
       accessorKey: "nome",
       header: "Serviço",
       cell: ({ row }) => <span className="font-medium">{row.original.nome}</span>,
+    },
+    {
+      accessorKey: "categoriaId",
+      header: "Categoria",
+      cell: ({ row }) => {
+        const nome = row.original.categoriaId ? nomeCategoria.get(row.original.categoriaId) : null;
+        return nome ? (
+          <Badge tone="muted">{nome}</Badge>
+        ) : (
+          <span className="text-muted2">-</span>
+        );
+      },
     },
     {
       accessorKey: "duracaoMinutos",
@@ -125,6 +140,7 @@ export function ServicosClient({
         <ServicoModal
           key={modal.servico?.id ?? "novo"}
           servico={modal.servico}
+          categorias={categorias}
           taxaCartao={taxaCartao}
           onClose={() => setModal(null)}
         />

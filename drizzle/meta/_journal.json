@@ -267,6 +267,13 @@
       "when": 1784859547740,
       "tag": "0037_estabelecimento_aparencia",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1784898856088,
+      "tag": "0038_categorias_servico",
+      "breakpoints": true
     }
   ]
 }
