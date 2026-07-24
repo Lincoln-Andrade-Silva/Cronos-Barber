@@ -7,6 +7,8 @@ export { PageHeader } from "./page-header";
 export { Badge } from "./badge";
 export { Segmented } from "./segmented";
 export { Select } from "./select";
+export { ColorPicker } from "./color-picker";
+export { SpectrumPicker } from "./spectrum-picker";
 export { ImageUpload } from "./image-upload";
 export { Toggle } from "./toggle";
 export { Modal } from "./modal";

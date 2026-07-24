@@ -96,7 +96,7 @@ function Avatar({ url, nome }: { url: string | null; nome: string }) {
     );
   }
   return (
-    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand text-[11px] font-bold text-white">
+    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand text-[11px] font-bold text-brand-fg">
       {nome.charAt(0).toUpperCase()}
     </span>
   );
@@ -258,7 +258,7 @@ export function MeusAgendamentos({ items }: { items: AgendamentoItem[] }) {
         <p className="text-sm text-muted">Você ainda não tem agendamentos.</p>
         <Link
           href="/agendar"
-          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-bold text-white shadow-brand transition hover:bg-brand-dark"
+          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-bold text-brand-fg shadow-brand transition hover:bg-brand-dark"
         >
           <CalendarPlus className="h-4 w-4" />
           Agendar horário

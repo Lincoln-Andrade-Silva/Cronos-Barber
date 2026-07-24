@@ -62,7 +62,7 @@ export default async function MinhasAssinaturasPage({
           <p className="text-sm text-muted">Você ainda não tem assinaturas.</p>
           <Link
             href="/planos"
-            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-bold text-white shadow-brand transition hover:bg-brand-dark"
+            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-bold text-brand-fg shadow-brand transition hover:bg-brand-dark"
           >
             <CreditCard className="h-4 w-4" />
             Ver planos

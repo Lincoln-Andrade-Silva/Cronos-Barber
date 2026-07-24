@@ -21,7 +21,7 @@ function Brand({ nomeEstabelecimento, logoUrl }: { nomeEstabelecimento: string; 
         />
       )}
       <div className="min-w-0">
-        <p className="truncate text-lg font-extrabold tracking-tight text-ink">
+        <p className="truncate font-display text-lg font-extrabold tracking-tight text-ink">
           {nomeEstabelecimento}
         </p>
         <p className="text-xs text-muted">Painel Admin</p>
@@ -90,7 +90,7 @@ function UserFooter({ nome }: { nome: string }) {
   return (
     <div className="mt-auto border-t border-line p-4 pb-[calc(env(safe-area-inset-bottom)_+_1rem)]">
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand text-sm font-bold text-brand-fg">
           {nome.charAt(0).toUpperCase()}
         </div>
         <div className="min-w-0 flex-1 leading-tight">

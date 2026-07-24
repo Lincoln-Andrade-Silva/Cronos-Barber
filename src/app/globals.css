@@ -2,9 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Paleta escura (padrão do sistema). Canais RGB para o Tailwind aplicar opacidade. */
-:root,
-[data-tema="escuro"] {
+/*
+ * Tema escuro como default do documento. O layout raiz sobrescreve estas vars com
+ * a aparência salva (via <style> :root); o que fica aqui vale antes disso - páginas
+ * de erro, not-found e a primeira pintura. Espelha PALETA_ESCURA em src/lib/aparencia.ts.
+ */
+:root {
+  color-scheme: dark;
+
   --c-bg: 10 10 18;
   --c-panel: 15 15 28;
   --c-surface: 20 20 40;
@@ -15,25 +20,23 @@
   --c-muted: 107 114 128;
   --c-muted2: 75 85 99;
   --c-brand: 59 130 246;
+  --c-brand-fg: 255 255 255;
   --c-brand-light: 96 165 250;
   --c-brand-dark: 29 78 216;
-  color-scheme: dark;
-}
 
-[data-tema="claro"] {
-  --c-bg: 246 247 250;
-  --c-panel: 255 255 255;
-  --c-surface: 241 243 247;
-  --c-surface2: 232 235 241;
-  --c-line: 224 228 235;
-  --c-line2: 203 209 219;
-  --c-ink: 17 24 39;
-  --c-muted: 100 108 122;
-  --c-muted2: 142 150 163;
-  --c-brand: 37 99 235;
-  --c-brand-light: 59 130 246;
-  --c-brand-dark: 30 64 175;
-  color-scheme: light;
+  /* Estados de feedback (escuro por padrão). */
+  --fb-danger-surface: #2a1618;
+  --fb-danger-line: #5c2b2f;
+  --fb-danger-ink: #fca5a5;
+  --fb-success-surface: #0f241d;
+  --fb-success-line: #1f4d3c;
+  --fb-success-ink: #6ee7b7;
+  --fb-warning-surface: #271d0c;
+  --fb-warning-line: #4a3a18;
+  --fb-warning-ink: #fcd34d;
+
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-inter);
 }
 
 html {

@@ -20,7 +20,7 @@ export function KpiGrid({ cards }: { cards: Kpi[] }) {
             <Icon className="h-5 w-5" />
           </span>
           <p className="mt-3 text-xs text-muted">{label}</p>
-          <p className="mt-0.5 text-xl font-bold">{valor}</p>
+          <p className="mt-0.5 font-display text-xl font-bold">{valor}</p>
           {sub && <p className="mt-0.5 text-[11px] text-muted">{sub}</p>}
         </Card>
       ))}
@@ -31,7 +31,7 @@ export function KpiGrid({ cards }: { cards: Kpi[] }) {
 export function Secao({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
     <Card>
-      <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-muted2">{titulo}</h3>
+      <h3 className="mb-4 font-display text-sm font-bold uppercase tracking-wider text-muted2">{titulo}</h3>
       {children}
     </Card>
   );
@@ -134,7 +134,7 @@ export function Avatar({ url, nome }: { url?: string | null; nome: string }) {
     );
   }
   return (
-    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-white">
+    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-brand-fg">
       {nome.charAt(0).toUpperCase()}
     </span>
   );

@@ -22,8 +22,25 @@ const config: Config = {
         muted2: "rgb(var(--c-muted2) / <alpha-value>)",
         brand: {
           DEFAULT: "rgb(var(--c-brand) / <alpha-value>)",
+          fg: "rgb(var(--c-brand-fg) / <alpha-value>)",
           light: "rgb(var(--c-brand-light) / <alpha-value>)",
           dark: "rgb(var(--c-brand-dark) / <alpha-value>)",
+        },
+        // Estados de feedback (erro/sucesso/aviso), com variante legível por tema.
+        danger: {
+          surface: "var(--fb-danger-surface)",
+          line: "var(--fb-danger-line)",
+          ink: "var(--fb-danger-ink)",
+        },
+        success: {
+          surface: "var(--fb-success-surface)",
+          line: "var(--fb-success-line)",
+          ink: "var(--fb-success-ink)",
+        },
+        warning: {
+          surface: "var(--fb-warning-surface)",
+          line: "var(--fb-warning-line)",
+          ink: "var(--fb-warning-ink)",
         },
       },
       boxShadow: {
@@ -32,6 +49,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "var(--font-sans)", "system-ui", "sans-serif"],
       },
     },
   },

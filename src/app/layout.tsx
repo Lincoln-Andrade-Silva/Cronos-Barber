@@ -1,27 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Lato, Montserrat, Poppins, Roboto } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { estiloDaArea } from "@/lib/aparencia";
+import { classesDeFonte } from "@/lib/fontes-google";
+import { FONTES_CORPO, FONTES_TITULO, variavelDaFonte } from "@/lib/fontes";
+import {
+  declaracoesDeCor,
+  declaracoesDeFeedback,
+  esquemaDeCor,
+  paletaDoTema,
+} from "@/lib/aparencia";
 import { getAparencia } from "@/lib/estabelecimento";
 import "./globals.css";
-
-// Todas as fontes disponíveis em Aparência ficam carregadas como CSS variables;
-// cada área escolhe a sua definindo `--font-sans`.
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-poppins",
-});
-const roboto = Roboto({
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-roboto",
-});
-const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat" });
-const lato = Lato({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-lato" });
-
-const fontes = [inter, poppins, roboto, montserrat, lato].map((f) => f.variable).join(" ");
 
 export const metadata: Metadata = {
   title: "Chronoss",
@@ -29,25 +17,43 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a0a12",
   width: "device-width",
   initialScale: 1,
   // Evita o zoom automático ao focar inputs no mobile.
   maximumScale: 1,
 };
 
+export async function generateViewport(): Promise<Viewport> {
+  const paleta = paletaDoTema(await getAparencia());
+  return { themeColor: paleta.bg };
+}
+
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // O body usa o tema da vitrine; o layout do admin sobrescreve no subtree dele.
   const aparencia = await getAparencia();
-  const vitrine = estiloDaArea(aparencia.vitrine);
+  const paleta = paletaDoTema(aparencia);
+  const esquema = esquemaDeCor(paleta);
+  const fonteCorpo = variavelDaFonte(aparencia.fonteCorpo, FONTES_CORPO);
+  const fonteTitulo = variavelDaFonte(aparencia.fonteTitulo, FONTES_TITULO);
+
+  // Vars do tema aplicadas no :root a partir de valores fechados (nada cru do usuário).
+  const css = [
+    ":root{",
+    `color-scheme:${esquema};`,
+    `${declaracoesDeCor(paleta)};`,
+    `${declaracoesDeFeedback(esquema)};`,
+    `--font-sans:var(${fonteCorpo});`,
+    `--font-display:var(${fonteTitulo});`,
+    "}",
+  ].join("");
 
   return (
-    <html lang="pt-BR" className={fontes}>
-      <body data-tema={vitrine.dataTema} style={vitrine.style}>
+    <html lang="pt-BR" className={classesDeFonte}>
+      <body>
+        <style dangerouslySetInnerHTML={{ __html: css }} />
         {children}
         <SpeedInsights />
       </body>

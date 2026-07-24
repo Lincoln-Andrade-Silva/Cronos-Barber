@@ -238,7 +238,7 @@ export function AgendaLista({
               className="h-10 w-10 shrink-0 rounded-full border border-line object-cover"
             />
           ) : (
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-bold text-white">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-bold text-brand-fg">
               {barbeiroNome.charAt(0).toUpperCase()}
             </span>
           ))}

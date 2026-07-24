@@ -51,6 +51,19 @@ export const bloqueios = pgTable("bloqueios", {
 
 export type Bloqueio = typeof bloqueios.$inferSelect;
 
+// Aparência do sistema (vitrine + admin usam o mesmo tema). No modo "personalizado"
+// a paleta é derivada das 5 cores-base (bg, surface, ink, line, brand).
+export interface Aparencia {
+  tema: "escuro" | "claro" | "personalizado";
+  bg: string;
+  surface: string;
+  ink: string;
+  line: string;
+  brand: string;
+  fonteCorpo: string;
+  fonteTitulo: string;
+}
+
 // Horário de atendimento por dia da semana (0 = domingo ... 6 = sábado).
 export interface HorarioDia {
   dia: number;
@@ -59,18 +72,6 @@ export interface HorarioDia {
   fecha: string;
 }
 
-// Aparência por área. `tema` "personalizado" usa `base` (paleta clara/escura) + `cor` (destaque).
-export interface TemaArea {
-  tema: "escuro" | "claro" | "personalizado";
-  base: "escuro" | "claro";
-  cor: string;
-  fonte: string;
-}
-
-export interface Aparencia {
-  vitrine: TemaArea;
-  admin: TemaArea;
-}
 
 // Identidade do estabelecimento (linha única, id sempre = 1). Editável em Configurações.
 export const estabelecimentoInfo = pgTable("estabelecimento_info", {

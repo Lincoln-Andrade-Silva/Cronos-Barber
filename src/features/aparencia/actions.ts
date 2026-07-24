@@ -14,7 +14,7 @@ export interface AparenciaFormState {
 export async function salvarAparencia(valor: Aparencia): Promise<AparenciaFormState> {
   await requireAdmin();
 
-  // Normaliza no servidor: nunca confia no que veio do client.
+  // Normaliza no servidor: nada cru do client vai pro banco.
   const aparencia = normalizarAparencia(valor);
   const agora = new Date();
 

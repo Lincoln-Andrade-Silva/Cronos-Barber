@@ -32,7 +32,7 @@ export function AuthPanel({
             className="mb-3 h-16 w-16 rounded-full border border-line object-cover"
           />
         )}
-        <span className="text-[32px] font-extrabold leading-none tracking-tight text-ink">
+        <span className="font-display text-[32px] font-extrabold leading-none tracking-tight text-ink">
           {nomeEstabelecimento}
         </span>
         <span className="mt-1.5 text-[11px] font-semibold uppercase tracking-wider text-brand-light">
@@ -62,7 +62,7 @@ export function AuthPanel({
             className={cn(
               "rounded-lg py-2.5 text-[13px] font-semibold transition",
               tab === value
-                ? "bg-brand text-white shadow-brand"
+                ? "bg-brand text-brand-fg shadow-brand"
                 : "text-muted hover:text-ink",
             )}
           >

@@ -210,7 +210,7 @@ export function AgendarWizard({
             <div
               className={cn(
                 "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition",
-                i <= passo ? "bg-brand text-white" : "bg-surface text-muted2",
+                i <= passo ? "bg-brand text-brand-fg" : "bg-surface text-muted2",
               )}
             >
               {i + 1}
@@ -257,7 +257,7 @@ export function AgendarWizard({
                     <span
                       className={cn(
                         "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition",
-                        sel ? "border-brand bg-brand text-white" : "border-line2",
+                        sel ? "border-brand bg-brand text-brand-fg" : "border-line2",
                       )}
                     >
                       {sel && <Check className="h-3.5 w-3.5" />}
@@ -394,7 +394,7 @@ export function AgendarWizard({
                   className={cn(
                     "rounded-lg border py-2.5 text-sm font-medium transition",
                     hora === s
-                      ? "border-brand bg-brand text-white"
+                      ? "border-brand bg-brand text-brand-fg"
                       : "border-line text-ink hover:border-brand/40 hover:bg-surface",
                   )}
                 >

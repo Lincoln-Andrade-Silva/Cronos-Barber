@@ -74,7 +74,7 @@ export default async function ClientHome() {
             />
           )}
           <div className="leading-tight">
-            <p className="text-lg font-extrabold tracking-tight text-ink">{nome}</p>
+            <p className="font-display text-lg font-extrabold tracking-tight text-ink">{nome}</p>
             <p className="text-xs text-muted">Olá, {profile.nome}</p>
           </div>
         </div>

@@ -58,7 +58,7 @@ export function ComissaoForm({ barbeiros }: { barbeiros: Barbeiro[] }) {
                     className="h-9 w-9 shrink-0 rounded-full border border-line object-cover"
                   />
                 ) : (
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-bold text-white">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-bold text-brand-fg">
                     {b.nome.charAt(0).toUpperCase()}
                   </span>
                 )}

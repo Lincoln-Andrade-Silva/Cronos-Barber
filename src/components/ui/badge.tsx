@@ -1,12 +1,13 @@
 import { cn } from "@/lib/cn";
 
-type Tone = "success" | "muted" | "brand" | "danger";
+type Tone = "success" | "muted" | "brand" | "danger" | "warning";
 
 const toneClasses: Record<Tone, string> = {
-  success: "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",
+  success: "border-success-line bg-success-surface text-success-ink",
+  danger: "border-danger-line bg-danger-surface text-danger-ink",
+  warning: "border-warning-line bg-warning-surface text-warning-ink",
   muted: "border-line bg-surface text-muted2",
   brand: "border-brand/20 bg-brand/10 text-brand-light",
-  danger: "border-red-400/30 bg-red-400/10 text-red-400",
 };
 
 export function Badge({
