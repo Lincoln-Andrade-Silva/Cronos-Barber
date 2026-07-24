@@ -240,6 +240,9 @@ export const vendasProdutos = pgTable("vendas_produtos", {
   clienteAvulso: text("cliente_avulso"),
   // Instrumento do recebimento: dinheiro/pix/debito/credito. Null = não informado.
   metodoPagamento: text("metodo_pagamento"),
+  // Atendimento em que o produto foi vendido (modal de finalização). Null = venda avulsa,
+  // feita fora de um atendimento; avulsa não entra no ticket médio.
+  agendamentoId: uuid("agendamento_id"),
   dataHora: timestamp("data_hora", { withTimezone: true }).notNull().defaultNow(),
 });
 

@@ -253,6 +253,13 @@
       "when": 1784831500000,
       "tag": "0035_create_movimentacoes_caixa",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1784859024848,
+      "tag": "0036_vendas_vinculo_atendimento",
+      "breakpoints": true
     }
   ]
 }

@@ -43,6 +43,7 @@ export async function PainelFinanceiro({
         dataHora: vendasProdutos.dataHora,
         total: vendasProdutos.total,
         metodoPagamento: vendasProdutos.metodoPagamento,
+        agendamentoId: vendasProdutos.agendamentoId,
       })
       .from(vendasProdutos)
       .where(and(gte(vendasProdutos.dataHora, inicio), lt(vendasProdutos.dataHora, fimExclusivo))),
@@ -72,9 +73,17 @@ export async function PainelFinanceiro({
   const fatTotal = fatServicos + fatProdutos;
   // Cortesia (gratuito) não fatura: fora da receita recorrente.
   const recorrente = ativas.filter((a) => !a.gratuito).reduce((s, a) => s + Number(a.valor), 0);
+  // Venda avulsa = produto vendido fora de um atendimento. Não entra no ticket médio.
+  const fatProdutosAtendimento = vendas
+    .filter((v) => v.agendamentoId)
+    .reduce((s, v) => s + Number(v.total), 0);
+  const fatProdutosAvulsos = vendas
+    .filter((v) => !v.agendamentoId)
+    .reduce((s, v) => s + Number(v.total), 0);
+
   const pagantes = finalizados.filter((r) => r.tipo !== "plano").length;
-  // Ticket médio = faturamento (serviços + produtos) por atendimento; balão separa só serviços.
-  const ticket = pagantes > 0 ? (fatServicos + fatProdutos) / pagantes : 0;
+  // Ticket médio = (serviços + produtos vendidos no atendimento) por atendimento; balão separa só serviços.
+  const ticket = pagantes > 0 ? (fatServicos + fatProdutosAtendimento) / pagantes : 0;
   const ticketServicos = pagantes > 0 ? fatServicos / pagantes : 0;
 
   // Recebimento por forma e reembolsos.
@@ -172,7 +181,16 @@ export async function PainelFinanceiro({
             vazio="Sem faturamento no período."
             itens={[
               { nome: "Serviços", destaque: formatBRL(fatServicos), proporcao: (fatServicos / maxComposicao) * 100 },
-              { nome: "Produtos", destaque: formatBRL(fatProdutos), proporcao: (fatProdutos / maxComposicao) * 100 },
+              {
+                nome: "Produtos (no atendimento)",
+                destaque: formatBRL(fatProdutosAtendimento),
+                proporcao: (fatProdutosAtendimento / maxComposicao) * 100,
+              },
+              {
+                nome: "Produtos (venda avulsa)",
+                destaque: formatBRL(fatProdutosAvulsos),
+                proporcao: (fatProdutosAvulsos / maxComposicao) * 100,
+              },
               {
                 nome: "Assinaturas (recorrente)",
                 destaque: formatBRL(recorrente),

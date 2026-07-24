@@ -21,6 +21,7 @@ export interface VendaRow {
   barbeiroNome: string;
   clienteNome: string | null;
   metodoPagamento: string | null;
+  noAtendimento: boolean;
 }
 
 const iconBtn =
@@ -104,6 +105,16 @@ export function VendasClient({
       cell: ({ getValue }) => (
         <Badge tone="muted">{rotuloMetodo(getValue() as string | null)}</Badge>
       ),
+    },
+    {
+      accessorKey: "noAtendimento",
+      header: "Origem",
+      cell: ({ row }) =>
+        row.original.noAtendimento ? (
+          <Badge tone="brand">Atendimento</Badge>
+        ) : (
+          <Badge tone="muted">Avulsa</Badge>
+        ),
     },
     {
       id: "acoes",

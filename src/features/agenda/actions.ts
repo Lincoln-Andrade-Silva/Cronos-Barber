@@ -146,6 +146,8 @@ export async function finalizarAtendimento(
       clienteId: base.clienteId,
       clienteAvulso: base.clienteAvulso,
       metodoPagamento: metodo,
+      // Vincula ao atendimento: venda dentro do atendimento não é avulsa.
+      agendamentoId: base.id,
     };
   });
 

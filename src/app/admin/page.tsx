@@ -3,6 +3,7 @@ import {
   CalendarCheck,
   CreditCard,
   DollarSign,
+  PackageOpen,
   Percent,
   Receipt,
   UserPlus,
@@ -70,6 +71,7 @@ export default async function AdminHome({
         quantidade: vendasProdutos.quantidade,
         total: vendasProdutos.total,
         metodoPagamento: vendasProdutos.metodoPagamento,
+        agendamentoId: vendasProdutos.agendamentoId,
       })
       .from(vendasProdutos)
       .innerJoin(produtos, eq(vendasProdutos.produtoId, produtos.id))
@@ -151,9 +153,15 @@ export default async function AdminHome({
   const fatServicos = finalizados.reduce((s, r) => s + Number(r.valor), 0);
   const fatProdutos = vendas.reduce((s, r) => s + Number(r.total), 0);
   const fatTotal = fatServicos + fatProdutos;
+  // Venda avulsa = produto vendido fora de um atendimento (sem vínculo). Não entra no ticket.
+  const vendasNoAtendimento = vendas.filter((v) => v.agendamentoId);
+  const vendasAvulsas = vendas.filter((v) => !v.agendamentoId);
+  const fatProdutosAtendimento = vendasNoAtendimento.reduce((s, v) => s + Number(v.total), 0);
+  const fatProdutosAvulsos = vendasAvulsas.reduce((s, v) => s + Number(v.total), 0);
+
   const pagantes = finalizados.filter((r) => r.tipo !== "plano").length;
-  // Ticket médio = faturamento (serviços + produtos) por atendimento pagante; balão separa só serviços.
-  const ticket = pagantes > 0 ? (fatServicos + fatProdutos) / pagantes : 0;
+  // Ticket médio = (serviços + produtos vendidos no atendimento) por atendimento pagante.
+  const ticket = pagantes > 0 ? (fatServicos + fatProdutosAtendimento) / pagantes : 0;
   const ticketServicos = pagantes > 0 ? fatServicos / pagantes : 0;
   // Cortesia (gratuito) não fatura: fora da receita recorrente.
   const recorrente = ativas.filter((a) => !a.gratuito).reduce((s, a) => s + Number(a.valor), 0);
@@ -292,6 +300,17 @@ export default async function AdminHome({
   const produtosRank = [...porProduto.entries()].sort((a, b) => b[1].qtd - a[1].qtd).slice(0, 6);
   const maxProduto = Math.max(1, ...produtosRank.map(([, v]) => v.qtd));
 
+  // Quais produtos saíram fora de atendimento (venda avulsa).
+  const porProdutoAvulso = new Map<string, { qtd: number; total: number }>();
+  for (const v of vendasAvulsas) {
+    const a = porProdutoAvulso.get(v.produtoNome) ?? { qtd: 0, total: 0 };
+    a.qtd += v.quantidade;
+    a.total += Number(v.total);
+    porProdutoAvulso.set(v.produtoNome, a);
+  }
+  const avulsosRank = [...porProdutoAvulso.entries()].sort((a, b) => b[1].total - a[1].total).slice(0, 6);
+  const maxAvulso = Math.max(1, ...avulsosRank.map(([, v]) => v.total));
+
   // Recebimentos por método (balcão): serviços presenciais finalizados + produtos vendidos.
   const recebPorMetodo = new Map<string, number>();
   for (const r of finalizados) {
@@ -332,7 +351,18 @@ export default async function AdminHome({
       <div className="mb-6">
         <KpiGrid
           cards={[
-            { label: "Faturamento total", valor: formatBRL(fatTotal), icon: DollarSign },
+            {
+              label: "Faturamento total",
+              valor: formatBRL(fatTotal),
+              icon: DollarSign,
+              sub: `sem produtos avulsos: ${formatBRL(fatTotal - fatProdutosAvulsos)}`,
+            },
+            {
+              label: "Produtos avulsos",
+              valor: formatBRL(fatProdutosAvulsos),
+              icon: PackageOpen,
+              sub: `${vendasAvulsas.length} venda(s) fora de atendimento`,
+            },
             { label: "Atendimentos", valor: String(finalizados.length), icon: CalendarCheck },
             {
               label: "Ticket médio",
@@ -450,6 +480,18 @@ export default async function AdminHome({
               destaque: `${v.qtd}x`,
               sub: formatBRL(v.fat),
               proporcao: (v.qtd / maxServico) * 100,
+            }))}
+          />
+        </Secao>
+
+        <Secao titulo={`Vendas avulsas (fora de atendimento) - ${formatBRL(fatProdutosAvulsos)}`}>
+          <Ranking
+            vazio="Nenhuma venda avulsa no período."
+            itens={avulsosRank.map(([nome, v]) => ({
+              nome,
+              destaque: `${v.qtd}x`,
+              sub: formatBRL(v.total),
+              proporcao: (v.total / maxAvulso) * 100,
             }))}
           />
         </Secao>
