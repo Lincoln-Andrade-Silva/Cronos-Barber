@@ -21,6 +21,8 @@ const schema = z.object({
     .int()
     .min(5, "Duração mínima é 5 minutos.")
     .max(600, "Duração máxima é 600 minutos."),
+  categoriaId: z.string().uuid().nullable(),
+  ordem: z.coerce.number({ message: "Ordem inválida." }).int().min(0).max(9999),
   ativo: z.boolean(),
 });
 
@@ -35,13 +37,15 @@ export async function salvarServico(
     descricao: formData.get("descricao"),
     preco: formData.get("preco"),
     duracaoMinutos: formData.get("duracaoMinutos"),
+    categoriaId: (formData.get("categoriaId") as string) || null,
+    ordem: formData.get("ordem"),
     ativo: formData.get("ativo") === "true",
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Dados inválidos." };
   }
 
-  const { nome, descricao, preco, duracaoMinutos, ativo } = parsed.data;
+  const { nome, descricao, preco, duracaoMinutos, categoriaId, ordem, ativo } = parsed.data;
   const id = formData.get("id");
 
   try {
@@ -50,6 +54,8 @@ export async function salvarServico(
       descricao: descricao?.trim() || null,
       preco: preco.toFixed(2),
       duracaoMinutos,
+      categoriaId,
+      ordem,
       ativo,
     };
 

@@ -61,8 +61,8 @@ export function Preview({
 
       <div className="space-y-2 px-4 pb-4">
         {[
-          { nome: "Corte + Barba", ok: true },
-          { nome: "Hidratação", ok: false },
+          { nome: "Serviço 1", ok: true },
+          { nome: "Serviço 2", ok: false },
         ].map((linha) => (
           <div
             key={linha.nome}

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { Button, Field, FormError, Input, Modal, Textarea, Toggle } from "@/components/ui";
-import type { Servico } from "@/db/schema";
+import { Button, Field, FormError, Input, Modal, Select, Textarea, Toggle } from "@/components/ui";
+import type { Categoria, Servico } from "@/db/schema";
 import { formatBRL } from "@/lib/format";
 import { salvarServico, type ServicoFormState } from "./actions";
 
@@ -18,16 +18,19 @@ function SubmitButton({ editando }: { editando: boolean }) {
 
 export function ServicoModal({
   servico,
+  categorias,
   taxaCartao,
   onClose,
 }: {
   servico: Servico | null;
+  categorias: Categoria[];
   taxaCartao: number;
   onClose: () => void;
 }) {
   const [state, formAction] = useFormState<ServicoFormState, FormData>(salvarServico, {});
   const [ativo, setAtivo] = useState(servico?.ativo ?? true);
   const [preco, setPreco] = useState(servico?.preco ?? "0");
+  const [categoriaId, setCategoriaId] = useState(servico?.categoriaId ?? "");
 
   const precoNum = Number(String(preco).replace(",", "."));
   const temPreco = Number.isFinite(precoNum) && precoNum > 0;
@@ -42,6 +45,7 @@ export function ServicoModal({
       <form action={formAction} className="mx-auto max-w-sm space-y-5">
         {servico && <input type="hidden" name="id" value={servico.id} />}
         <input type="hidden" name="ativo" value={String(ativo)} />
+        <input type="hidden" name="categoriaId" value={categoriaId} />
 
         <Field label="Nome" htmlFor="s-nome">
           <Input
@@ -84,6 +88,25 @@ export function ServicoModal({
             {formatBRL(precoNum - liquido)}). No balcão, o valor é integral.
           </p>
         )}
+
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Categoria">
+            <Select
+              value={categoriaId}
+              onChange={setCategoriaId}
+              options={[
+                { value: "", label: "Sem categoria" },
+                ...categorias.map((c) => ({
+                  value: c.id,
+                  label: c.ativo ? c.nome : `${c.nome} (inativa)`,
+                })),
+              ]}
+            />
+          </Field>
+          <Field label="Ordem" htmlFor="s-ordem" hint="(na categoria)">
+            <Input id="s-ordem" name="ordem" type="number" min={0} defaultValue={servico?.ordem ?? 0} />
+          </Field>
+        </div>
 
         <Field label="Descrição" htmlFor="s-descricao" hint="(opcional)">
           <Textarea

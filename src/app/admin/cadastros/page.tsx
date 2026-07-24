@@ -1,6 +1,6 @@
 import { and, asc, count, eq, ilike, inArray, or, type SQL } from "drizzle-orm";
 import { db } from "@/db";
-import { agendamentos, planoServicos, planos, produtos, profiles, servicos, vendasProdutos } from "@/db/schema";
+import { agendamentos, categorias, planoServicos, planos, produtos, profiles, servicos, vendasProdutos } from "@/db/schema";
 import { PageHeader, UrlTabBar, type TabItem } from "@/components/ui";
 import { getCurrentProfile } from "@/lib/auth";
 import { diasDesde, frequenciaPorCliente, ultimaAtividadePorCliente } from "@/lib/frequencia";
@@ -8,6 +8,7 @@ import { getIntegracaoPagamento } from "@/lib/pagamento";
 import { PAGE_SIZE, offsetDaPagina, parsePagina, totalPaginas } from "@/lib/pagination";
 import { ServicosClient } from "@/features/servicos/servicos-client";
 import { ProdutosClient } from "@/features/produtos/produtos-client";
+import { CategoriasClient } from "@/features/categorias/categorias-client";
 import { PlanosClient } from "@/features/planos/planos-client";
 import { UsuariosClient } from "@/features/usuarios/usuarios-client";
 
@@ -15,6 +16,7 @@ export const dynamic = "force-dynamic";
 
 const TABS = [
   { key: "servicos", label: "Serviços", ready: true },
+  { key: "categorias", label: "Categorias", ready: true },
   { key: "produtos", label: "Produtos", ready: true },
   { key: "planos", label: "Planos", ready: true },
   { key: "usuarios", label: "Usuários", ready: true },
@@ -151,6 +153,26 @@ export default async function CadastrosPage({
         pageCount={totalPaginas(total[0]?.n ?? 0)}
       />
     );
+  } else if (tab === "categorias") {
+    const cond: SQL[] = [];
+    if (q) cond.push(ilike(categorias.nome, `%${q}%`));
+    if (status === "ativos") cond.push(eq(categorias.ativo, true));
+    if (status === "inativos") cond.push(eq(categorias.ativo, false));
+    const where = cond.length ? and(...cond) : undefined;
+
+    const [total, rows] = await Promise.all([
+      db.select({ n: count() }).from(categorias).where(where),
+      db
+        .select()
+        .from(categorias)
+        .where(where)
+        .orderBy(asc(categorias.ordem), asc(categorias.nome))
+        .limit(PAGE_SIZE)
+        .offset(offset),
+    ]);
+    conteudo = (
+      <CategoriasClient categorias={rows} page={pagina} pageCount={totalPaginas(total[0]?.n ?? 0)} />
+    );
   } else {
     const cond: SQL[] = [];
     if (q) cond.push(ilike(servicos.nome, `%${q}%`));
@@ -158,14 +180,22 @@ export default async function CadastrosPage({
     if (status === "inativos") cond.push(eq(servicos.ativo, false));
     const where = cond.length ? and(...cond) : undefined;
 
-    const [total, rows, cfgPagamento] = await Promise.all([
+    const [total, rows, cfgPagamento, listaCategorias] = await Promise.all([
       db.select({ n: count() }).from(servicos).where(where),
-      db.select().from(servicos).where(where).orderBy(asc(servicos.nome)).limit(PAGE_SIZE).offset(offset),
+      db
+        .select()
+        .from(servicos)
+        .where(where)
+        .orderBy(asc(servicos.ordem), asc(servicos.nome))
+        .limit(PAGE_SIZE)
+        .offset(offset),
       getIntegracaoPagamento(),
+      db.select().from(categorias).orderBy(asc(categorias.ordem), asc(categorias.nome)),
     ]);
     conteudo = (
       <ServicosClient
         servicos={rows}
+        categorias={listaCategorias}
         taxaCartao={Number(cfgPagamento?.taxaCartao ?? "3.03")}
         page={pagina}
         pageCount={totalPaginas(total[0]?.n ?? 0)}

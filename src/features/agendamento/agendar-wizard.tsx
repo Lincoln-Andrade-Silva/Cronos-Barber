@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, Check, ChevronLeft, Clock, CreditCard, Scissors, Star, Store, Zap } from "lucide-react";
+import { AlertTriangle, Check, ChevronLeft, Clock, CreditCard, Star, Store, Zap } from "lucide-react";
 import { Button, Card, FormError } from "@/components/ui";
 import type { Barbeiro, Servico } from "@/db/schema";
 import { cn } from "@/lib/cn";
@@ -38,19 +38,35 @@ const PROXIMOS_DIAS = Array.from({ length: 14 }, (_, i) => {
 
 const PASSOS = ["Serviços", "Profissional", "Horário"];
 
+export type ServicoAgendavel = Servico & { categoriaNome: string | null };
+
 export function AgendarWizard({
   servicos,
   barbeiros,
   servicosCobertos,
 }: {
-  servicos: Servico[];
+  servicos: ServicoAgendavel[];
   barbeiros: Barbeiro[];
   servicosCobertos: string[];
 }) {
   const router = useRouter();
   const cobertos = new Set(servicosCobertos);
   const [passo, setPasso] = useState(0);
-  const [selecionados, setSelecionados] = useState<Servico[]>([]);
+  const [selecionados, setSelecionados] = useState<ServicoAgendavel[]>([]);
+
+  // Serviços já vêm ordenados (categoria.ordem -> servico.ordem); agrupa por categoria,
+  // "Outros" para os sem categoria. Se só houver "Outros", não mostra cabeçalho.
+  const grupos = useMemo(() => {
+    const mapa = new Map<string, ServicoAgendavel[]>();
+    for (const s of servicos) {
+      const chave = s.categoriaNome ?? "Outros";
+      const lista = mapa.get(chave);
+      if (lista) lista.push(s);
+      else mapa.set(chave, [s]);
+    }
+    return [...mapa.entries()];
+  }, [servicos]);
+  const mostrarCabecalho = grupos.length > 1 || (grupos.length === 1 && grupos[0][0] !== "Outros");
   const [barbeiro, setBarbeiro] = useState<Barbeiro | null>(null);
   const [data, setData] = useState<string>(PROXIMOS_DIAS[0]);
   const [hora, setHora] = useState<string | null>(null);
@@ -139,7 +155,7 @@ export function AgendarWizard({
     setBuscando(false);
   }
 
-  function toggleServico(s: Servico) {
+  function toggleServico(s: ServicoAgendavel) {
     setSelecionados((prev) =>
       prev.some((x) => x.id === s.id) ? prev.filter((x) => x.id !== s.id) : [...prev, s],
     );
@@ -240,56 +256,74 @@ export function AgendarWizard({
       {/* Passo 1: Serviços (múltipla escolha) */}
       {passo === 0 && (
         <div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {servicos.map((s) => {
-              const sel = selecionados.some((x) => x.id === s.id);
-              return (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => toggleServico(s)}
-                  className={cn(
-                    "flex items-center justify-between gap-3 rounded-xl border p-4 text-left transition",
-                    sel ? "border-brand bg-brand/5" : "border-line bg-panel hover:border-brand/40 hover:bg-surface",
+          {servicos.length === 0 ? (
+            <p className="text-sm text-muted">Nenhum serviço disponível no momento.</p>
+          ) : (
+            <div className="space-y-5">
+              {grupos.map(([categoria, lista]) => (
+                <div key={categoria}>
+                  {mostrarCabecalho && (
+                    <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted">
+                      {categoria}
+                    </p>
                   )}
-                >
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span
-                      className={cn(
-                        "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition",
-                        sel ? "border-brand bg-brand text-brand-fg" : "border-line2",
-                      )}
-                    >
-                      {sel && <Check className="h-3.5 w-3.5" />}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="flex items-center gap-1 font-semibold">
-                        <span className="truncate">{s.nome}</span>
-                        {cobertos.has(s.id) && (
-                          <Star className="h-3.5 w-3.5 shrink-0 fill-brand-light text-brand-light" />
-                        )}
-                      </p>
-                      <p className="mt-0.5 flex items-center gap-1 text-xs text-muted">
-                        <Clock className="h-3 w-3" />
-                        {formatDuracao(s.duracaoMinutos)}
-                      </p>
-                    </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {lista.map((s) => {
+                      const sel = selecionados.some((x) => x.id === s.id);
+                      return (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => toggleServico(s)}
+                          className={cn(
+                            "flex items-center justify-between gap-3 rounded-xl border p-4 text-left transition",
+                            sel
+                              ? "border-brand bg-brand/5"
+                              : "border-line bg-panel hover:border-brand/40 hover:bg-surface",
+                          )}
+                        >
+                          <div className="flex min-w-0 items-center gap-3">
+                            <span
+                              className={cn(
+                                "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition",
+                                sel ? "border-brand bg-brand text-brand-fg" : "border-line2",
+                              )}
+                            >
+                              {sel && <Check className="h-3.5 w-3.5" />}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="flex items-center gap-1 font-semibold">
+                                <span className="truncate">{s.nome}</span>
+                                {cobertos.has(s.id) && (
+                                  <Star className="h-3.5 w-3.5 shrink-0 fill-brand-light text-brand-light" />
+                                )}
+                              </p>
+                              <p className="mt-0.5 flex items-center gap-1 text-xs text-muted">
+                                <Clock className="h-3 w-3" />
+                                {formatDuracao(s.duracaoMinutos)}
+                              </p>
+                            </div>
+                          </div>
+                          {cobertos.has(s.id) ? (
+                            <span className="shrink-0 text-right">
+                              <span className="block text-xs text-muted2 line-through">
+                                {formatBRL(s.preco)}
+                              </span>
+                              <span className="font-semibold text-emerald-400">Grátis</span>
+                            </span>
+                          ) : (
+                            <span className="shrink-0 font-semibold text-brand-light">
+                              {formatBRL(s.preco)}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
-                  {cobertos.has(s.id) ? (
-                    <span className="shrink-0 text-right">
-                      <span className="block text-xs text-muted2 line-through">{formatBRL(s.preco)}</span>
-                      <span className="font-semibold text-emerald-400">Grátis</span>
-                    </span>
-                  ) : (
-                    <span className="shrink-0 font-semibold text-brand-light">{formatBRL(s.preco)}</span>
-                  )}
-                </button>
-              );
-            })}
-            {servicos.length === 0 && (
-              <p className="text-sm text-muted">Nenhum serviço disponível no momento.</p>
-            )}
-          </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {selecionados.length > 0 && (
             <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-line bg-panel p-4">
@@ -326,7 +360,7 @@ export function AgendarWizard({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={b.fotoUrl} alt={b.nome} className="h-full w-full object-cover" />
                 ) : (
-                  <Scissors className="h-5 w-5" />
+                  b.nome.charAt(0).toUpperCase()
                 )}
               </div>
               <p className="font-semibold">{b.nome}</p>

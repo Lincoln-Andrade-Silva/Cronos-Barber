@@ -124,12 +124,26 @@ export const barbeiros = pgTable("barbeiros", {
 export type Barbeiro = typeof barbeiros.$inferSelect;
 export type NovoBarbeiro = typeof barbeiros.$inferInsert;
 
+// Categoria de serviço (nome + ativo). `ordem` ordena os grupos no agendamento.
+export const categorias = pgTable("categorias", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  nome: text("nome").notNull(),
+  ativo: boolean("ativo").notNull().default(true),
+  ordem: integer("ordem").notNull().default(0),
+  criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type Categoria = typeof categorias.$inferSelect;
+
 export const servicos = pgTable("servicos", {
   id: uuid("id").primaryKey().defaultRandom(),
   nome: text("nome").notNull(),
   descricao: text("descricao"),
   preco: numeric("preco", { precision: 10, scale: 2 }).notNull().default("0"),
   duracaoMinutos: integer("duracao_minutos").notNull().default(30),
+  // Categoria (opcional) e ordem dentro dela — usadas para agrupar/ordenar no agendamento.
+  categoriaId: uuid("categoria_id"),
+  ordem: integer("ordem").notNull().default(0),
   ativo: boolean("ativo").notNull().default(true),
   criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
 });
