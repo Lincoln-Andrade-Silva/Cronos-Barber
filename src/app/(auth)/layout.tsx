@@ -27,7 +27,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
               className="h-11 w-11 rounded-full border border-line object-cover"
             />
           )}
-          <span className="text-[26px] font-extrabold tracking-tight text-white">
+          <span className="text-[26px] font-extrabold tracking-tight text-ink">
             {nomeEstabelecimento}
           </span>
         </div>

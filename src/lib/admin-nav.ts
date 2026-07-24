@@ -4,6 +4,7 @@ import {
   CalendarDays,
   CreditCard,
   Gauge,
+  Palette,
   Settings,
   ShoppingCart,
   Users,
@@ -53,6 +54,9 @@ export const ADMIN_NAV: AdminNavSection[] = [
   },
   {
     label: "Sistema",
-    items: [{ label: "Configurações", href: "/admin/configuracoes", icon: Settings, ready: true }],
+    items: [
+      { label: "Aparência", href: "/admin/aparencia", icon: Palette, ready: true },
+      { label: "Configurações", href: "/admin/configuracoes", icon: Settings, ready: true },
+    ],
   },
 ];

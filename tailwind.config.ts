@@ -9,20 +9,21 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Paleta do sistema (fundo quase preto azulado + acento azul vivo)
-        bg: "#0a0a12",
-        panel: "#0f0f1c",
-        surface: "#141428",
-        surface2: "#1a1a30",
-        line: "#1e1e38",
-        line2: "#252545",
-        ink: "#f0f4ff",
-        muted: "#6b7280",
-        muted2: "#4b5563",
+        // Tokens semânticos via CSS variables: a paleta muda por área (vitrine/admin)
+        // conforme o tema escolhido em Aparência. Valores em `globals.css`.
+        bg: "rgb(var(--c-bg) / <alpha-value>)",
+        panel: "rgb(var(--c-panel) / <alpha-value>)",
+        surface: "rgb(var(--c-surface) / <alpha-value>)",
+        surface2: "rgb(var(--c-surface2) / <alpha-value>)",
+        line: "rgb(var(--c-line) / <alpha-value>)",
+        line2: "rgb(var(--c-line2) / <alpha-value>)",
+        ink: "rgb(var(--c-ink) / <alpha-value>)",
+        muted: "rgb(var(--c-muted) / <alpha-value>)",
+        muted2: "rgb(var(--c-muted2) / <alpha-value>)",
         brand: {
-          DEFAULT: "#3b82f6",
-          light: "#60a5fa",
-          dark: "#1d4ed8",
+          DEFAULT: "rgb(var(--c-brand) / <alpha-value>)",
+          light: "rgb(var(--c-brand-light) / <alpha-value>)",
+          dark: "rgb(var(--c-brand-dark) / <alpha-value>)",
         },
       },
       boxShadow: {

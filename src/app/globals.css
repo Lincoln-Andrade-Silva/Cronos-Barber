@@ -2,8 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* Paleta escura (padrão do sistema). Canais RGB para o Tailwind aplicar opacidade. */
+:root,
+[data-tema="escuro"] {
+  --c-bg: 10 10 18;
+  --c-panel: 15 15 28;
+  --c-surface: 20 20 40;
+  --c-surface2: 26 26 48;
+  --c-line: 30 30 56;
+  --c-line2: 37 37 69;
+  --c-ink: 240 244 255;
+  --c-muted: 107 114 128;
+  --c-muted2: 75 85 99;
+  --c-brand: 59 130 246;
+  --c-brand-light: 96 165 250;
+  --c-brand-dark: 29 78 216;
   color-scheme: dark;
+}
+
+[data-tema="claro"] {
+  --c-bg: 246 247 250;
+  --c-panel: 255 255 255;
+  --c-surface: 241 243 247;
+  --c-surface2: 232 235 241;
+  --c-line: 224 228 235;
+  --c-line2: 203 209 219;
+  --c-ink: 17 24 39;
+  --c-muted: 100 108 122;
+  --c-muted2: 142 150 163;
+  --c-brand: 37 99 235;
+  --c-brand-light: 59 130 246;
+  --c-brand-dark: 30 64 175;
+  color-scheme: light;
 }
 
 html {

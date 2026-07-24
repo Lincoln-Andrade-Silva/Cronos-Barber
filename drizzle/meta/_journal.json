@@ -260,6 +260,13 @@
       "when": 1784859024848,
       "tag": "0036_vendas_vinculo_atendimento",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1784859547740,
+      "tag": "0037_estabelecimento_aparencia",
+      "breakpoints": true
     }
   ]
 }

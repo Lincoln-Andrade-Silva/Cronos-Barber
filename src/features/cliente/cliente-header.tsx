@@ -25,7 +25,7 @@ export async function ClienteHeader({ nomeUsuario }: { nomeUsuario: string }) {
           />
         )}
         <div className="min-w-0 leading-tight">
-          <p className="truncate text-lg font-extrabold tracking-tight text-white">{nome}</p>
+          <p className="truncate text-lg font-extrabold tracking-tight text-ink">{nome}</p>
           <p className="truncate text-xs text-muted">Olá, {nomeUsuario}</p>
         </div>
       </Link>

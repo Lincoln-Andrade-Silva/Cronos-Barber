@@ -1,0 +1,1 @@
+ALTER TABLE "estabelecimento_info" ADD COLUMN "aparencia" jsonb;

@@ -21,7 +21,7 @@ function Brand({ nomeEstabelecimento, logoUrl }: { nomeEstabelecimento: string; 
         />
       )}
       <div className="min-w-0">
-        <p className="truncate text-lg font-extrabold tracking-tight text-white">
+        <p className="truncate text-lg font-extrabold tracking-tight text-ink">
           {nomeEstabelecimento}
         </p>
         <p className="text-xs text-muted">Painel Admin</p>
@@ -134,7 +134,7 @@ export function AdminShell({
           type="button"
           onClick={() => setOpen(true)}
           aria-label="Abrir menu"
-          className="rounded-lg p-2 text-white transition hover:bg-surface"
+          className="rounded-lg p-2 text-ink transition hover:bg-surface"
         >
           <Menu className="h-5 w-5" />
         </button>
@@ -147,7 +147,7 @@ export function AdminShell({
               className="h-7 w-7 rounded-full border border-line object-cover"
             />
           )}
-          <span className="text-sm font-semibold text-white">{nomeEstabelecimento}</span>
+          <span className="text-sm font-semibold text-ink">{nomeEstabelecimento}</span>
         </div>
       </header>
 

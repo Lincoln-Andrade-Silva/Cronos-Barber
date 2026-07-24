@@ -59,6 +59,19 @@ export interface HorarioDia {
   fecha: string;
 }
 
+// Aparência por área. `tema` "personalizado" usa `base` (paleta clara/escura) + `cor` (destaque).
+export interface TemaArea {
+  tema: "escuro" | "claro" | "personalizado";
+  base: "escuro" | "claro";
+  cor: string;
+  fonte: string;
+}
+
+export interface Aparencia {
+  vitrine: TemaArea;
+  admin: TemaArea;
+}
+
 // Identidade do estabelecimento (linha única, id sempre = 1). Editável em Configurações.
 export const estabelecimentoInfo = pgTable("estabelecimento_info", {
   id: integer("id").primaryKey().default(1),
@@ -72,6 +85,8 @@ export const estabelecimentoInfo = pgTable("estabelecimento_info", {
   enderecoBairro: text("endereco_bairro"),
   enderecoCidade: text("endereco_cidade"),
   horario: jsonb("horario").$type<HorarioDia[]>(),
+  // Tema e fonte escolhidos por área (vitrine do cliente e painel admin). Null = padrão do sistema.
+  aparencia: jsonb("aparencia").$type<Aparencia>(),
   atualizadoEm: timestamp("atualizado_em", { withTimezone: true }).notNull().defaultNow(),
 });
 
