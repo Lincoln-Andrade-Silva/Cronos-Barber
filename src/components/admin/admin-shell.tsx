@@ -34,7 +34,7 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
-    <nav className="flex-1 space-y-5 px-3 py-4">
+    <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
       {ADMIN_NAV.map((section) => (
         <div key={section.label} className="space-y-1">
           <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted2">
@@ -88,7 +88,7 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 
 function UserFooter({ nome }: { nome: string }) {
   return (
-    <div className="mt-auto border-t border-line p-4">
+    <div className="mt-auto border-t border-line p-4 pb-[calc(env(safe-area-inset-bottom)_+_1rem)]">
       <div className="flex items-center gap-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
           {nome.charAt(0).toUpperCase()}
@@ -151,9 +151,10 @@ export function AdminShell({
         </div>
       </header>
 
-      {/* Drawer (mobile) */}
+      {/* Drawer (mobile). h-[100dvh] em vez de inset-0: no Safari do iPhone o inset-0 usa a
+          altura com a barra recolhida e o menu acaba cortado embaixo. */}
       {open && (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div className="fixed inset-x-0 top-0 z-50 h-[100dvh] lg:hidden">
           <div
             className="absolute inset-0 bg-black/60"
             onClick={() => setOpen(false)}
