@@ -1,5 +1,5 @@
 import { and, desc, eq, gte, lt } from "drizzle-orm";
-import { Boxes, Receipt, ShoppingBag, ShoppingCart } from "lucide-react";
+import { Boxes, PackageOpen, Receipt, Scissors, ShoppingBag, ShoppingCart } from "lucide-react";
 import { db } from "@/db";
 import { barbeiros, produtos, profiles, vendasProdutos } from "@/db/schema";
 import { formatBRL } from "@/lib/format";
@@ -27,6 +27,7 @@ export async function PainelProdutos({
       clienteAvulso: vendasProdutos.clienteAvulso,
       quantidade: vendasProdutos.quantidade,
       total: vendasProdutos.total,
+      agendamentoId: vendasProdutos.agendamentoId,
     })
     .from(vendasProdutos)
     .innerJoin(produtos, eq(vendasProdutos.produtoId, produtos.id))
@@ -38,6 +39,21 @@ export async function PainelProdutos({
   const faturamento = vendas.reduce((s, v) => s + Number(v.total), 0);
   const itens = vendas.reduce((s, v) => s + v.quantidade, 0);
   const ticket = vendas.length > 0 ? faturamento / vendas.length : 0;
+
+  // Venda avulsa = fora de um atendimento (sem vínculo com agendamento).
+  const vendasAvulsas = vendas.filter((v) => !v.agendamentoId);
+  const fatAvulsas = vendasAvulsas.reduce((s, v) => s + Number(v.total), 0);
+  const fatNoAtendimento = faturamento - fatAvulsas;
+
+  const porProdutoAvulso = new Map<string, { qtd: number; total: number }>();
+  for (const v of vendasAvulsas) {
+    const p = porProdutoAvulso.get(v.produtoNome) ?? { qtd: 0, total: 0 };
+    p.qtd += v.quantidade;
+    p.total += Number(v.total);
+    porProdutoAvulso.set(v.produtoNome, p);
+  }
+  const avulsosRank = [...porProdutoAvulso.entries()].sort((a, b) => b[1].total - a[1].total);
+  const maxAvulso = Math.max(1, ...avulsosRank.map(([, v]) => v.total));
 
   const dias = gerarDias(inicio, fimExclusivo);
   const porDia = new Map<string, number>(dias.map((d) => [d, 0]));
@@ -95,6 +111,13 @@ export async function PainelProdutos({
           { label: "Itens vendidos", valor: String(itens), icon: Boxes },
           { label: "Nº de vendas", valor: String(vendas.length), icon: ShoppingCart },
           { label: "Ticket por venda", valor: formatBRL(ticket), icon: Receipt },
+          {
+            label: "Venda avulsa",
+            valor: formatBRL(fatAvulsas),
+            icon: PackageOpen,
+            sub: `${vendasAvulsas.length} venda(s) fora de atendimento`,
+          },
+          { label: "No atendimento", valor: formatBRL(fatNoAtendimento), icon: Scissors },
         ]}
       />
 
@@ -120,15 +143,28 @@ export async function PainelProdutos({
         </Secao>
       </div>
 
+      <Secao titulo={`Produtos vendidos avulsos (fora de atendimento) - ${formatBRL(fatAvulsas)}`}>
+        <Ranking
+          vazio="Nenhuma venda avulsa no período."
+          itens={avulsosRank.map(([nome, v]) => ({
+            nome,
+            destaque: `${v.qtd}x`,
+            sub: formatBRL(v.total),
+            proporcao: (v.total / maxAvulso) * 100,
+          }))}
+        />
+      </Secao>
+
       <Secao titulo={`Vendas${vendas.length > LIMITE_DETALHE ? ` (${LIMITE_DETALHE} mais recentes)` : ""}`}>
         <Tabela
-          cabecalho={["Profissional", "Produto", "Qtd", "Cliente", "Data", "Total"]}
+          cabecalho={["Profissional", "Produto", "Qtd", "Cliente", "Origem", "Data", "Total"]}
           avatars={detalhe.map((v) => v.barbeiroFoto)}
           linhas={detalhe.map((v) => [
             v.barbeiroNome,
             v.produtoNome,
             `${v.quantidade}x`,
             v.clienteNome ?? v.clienteAvulso ?? "-",
+            v.agendamentoId ? "Atendimento" : "Avulsa",
             diaCurto(spYmd(v.dataHora)),
             formatBRL(v.total),
           ])}

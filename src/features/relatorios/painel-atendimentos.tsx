@@ -39,10 +39,13 @@ export async function PainelAtendimentos({
     .orderBy(desc(agendamentos.dataHora));
 
   const vendasRows = await db
-    .select({ total: vendasProdutos.total })
+    .select({ total: vendasProdutos.total, agendamentoId: vendasProdutos.agendamentoId })
     .from(vendasProdutos)
     .where(and(gte(vendasProdutos.dataHora, inicio), lt(vendasProdutos.dataHora, fimExclusivo)));
-  const fatProdutos = vendasRows.reduce((s, r) => s + Number(r.total), 0);
+  // Só produtos vendidos dentro de um atendimento entram no ticket (avulsa fica de fora).
+  const fatProdutosAtendimento = vendasRows
+    .filter((r) => r.agendamentoId)
+    .reduce((s, r) => s + Number(r.total), 0);
 
   const finalizados = rows.filter((r) => r.status === "finalizado");
   const cancelados = rows.filter((r) => r.status === "cancelado").length;
@@ -58,7 +61,7 @@ export async function PainelAtendimentos({
   );
   const fatServicos = finalizados.reduce((s, r) => s + Number(r.valor), 0);
   const pagantes = finalizados.filter((r) => r.tipo !== "plano").length;
-  const ticket = pagantes > 0 ? (fatServicos + fatProdutos) / pagantes : 0;
+  const ticket = pagantes > 0 ? (fatServicos + fatProdutosAtendimento) / pagantes : 0;
 
   const dias = gerarDias(inicio, fimExclusivo);
   const porDia = new Map<string, number>(dias.map((d) => [d, 0]));
